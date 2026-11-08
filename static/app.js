@@ -289,6 +289,7 @@ if (btnUnlock && tokenModal) {
   btnUnlock.addEventListener("click", () => {
     $("modal-token-input").value = "";
     $("modal-token-error").textContent = "";
+    tokenModal.classList.add("visible");
     tokenModal.style.display = "flex";
     $("modal-token-input").focus();
   });
@@ -302,8 +303,8 @@ if (btnLock) {
 }
 const tokenModalClose = $("token-modal-close");
 const tokenModalCancel = $("modal-token-cancel");
-if (tokenModalClose) tokenModalClose.addEventListener("click", () => { tokenModal.style.display = "none"; });
-if (tokenModalCancel) tokenModalCancel.addEventListener("click", () => { tokenModal.style.display = "none"; });
+if (tokenModalClose) tokenModalClose.addEventListener("click", () => { tokenModal.classList.remove("visible"); tokenModal.style.display = "none"; });
+if (tokenModalCancel) tokenModalCancel.addEventListener("click", () => { tokenModal.classList.remove("visible"); tokenModal.style.display = "none"; });
 
 const tokenModalSubmit = $("modal-token-submit");
 if (tokenModalSubmit) {
@@ -318,6 +319,7 @@ if (tokenModalSubmit) {
     const ok = await verifyOperatorToken(candidate);
     tokenModalSubmit.disabled = false;
     if (ok) {
+      tokenModal.classList.remove("visible");
       tokenModal.style.display = "none";
       toast("Acceso de Operador Verificado. Modo de operaciones reales activado.");
       refresh();
@@ -653,6 +655,7 @@ if (judgeView) {
   if (btnViewTopo && topologyModal) {
     btnViewTopo.addEventListener("click", async () => {
       if (!liveTicketData) return;
+      topologyModal.classList.add("visible");
       topologyModal.style.display = "flex";
       $("topology-modal-content").textContent = "Consultando registro privado en InnerOS MongoDB mediante encabezado Authorization: Bearer <token>...";
 
@@ -668,8 +671,8 @@ if (judgeView) {
 
   const modalClose = $("modal-close");
   const modalOk = $("modal-ok-btn");
-  if (modalClose) modalClose.addEventListener("click", () => { topologyModal.style.display = "none"; });
-  if (modalOk) modalOk.addEventListener("click", () => { topologyModal.style.display = "none"; });
+  if (modalClose) modalClose.addEventListener("click", () => { topologyModal.classList.remove("visible"); topologyModal.style.display = "none"; });
+  if (modalOk) modalOk.addEventListener("click", () => { topologyModal.classList.remove("visible"); topologyModal.style.display = "none"; });
 
   const modalCopy = $("modal-copy-btn");
   if (modalCopy) {
