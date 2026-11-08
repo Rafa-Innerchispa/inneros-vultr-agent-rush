@@ -50,6 +50,9 @@ def test_sanitize_home_sample_categorizes_stale():
 
 
 def test_private_ticket_endpoint_requires_auth():
+    test_token = "sec_test_operator_token_20261108"
+    bridge_client.INNEROS_OPS_TOKEN = test_token
+
     srv = web.create_server("127.0.0.1", 0)
     port = srv.server_port
 
@@ -58,17 +61,40 @@ def test_private_ticket_endpoint_requires_auth():
     t.start()
 
     url = f"http://127.0.0.1:{port}/api/private/ops/ticket/TKT-TEST-001"
-    # Unauthenticated request must return 401
+    
+    # 1. Unauthenticated request must return 401
     try:
         urllib.request.urlopen(url)
         assert False, "Expected 401 Unauthorized"
     except urllib.error.HTTPError as exc:
         assert exc.code == 401
 
-    # Authenticated request with token query param
-    auth_url = f"{url}?token={bridge_client.INNEROS_OPS_TOKEN}"
+    # 2. Compromised / revoked token must be rejected with 401
+    revoked_req = urllib.request.Request(
+        url,
+        headers={"Authorization": "Bearer inneros-ops-token-bellini-2026"},
+    )
+    try:
+        urllib.request.urlopen(revoked_req)
+        assert False, "Expected 401 Unauthorized for revoked token"
+    except urllib.error.HTTPError as exc:
+        assert exc.code == 401
+
+    # 3. Query string token leak is strictly denied (must return 401)
+    query_url = f"{url}?token={test_token}"
+    try:
+        urllib.request.urlopen(query_url)
+        assert False, "Expected 401 Unauthorized for query parameter token"
+    except urllib.error.HTTPError as exc:
+        assert exc.code == 401
+
+    # 4. Valid Authorization: Bearer <token> header succeeds with 200
+    valid_req = urllib.request.Request(
+        url,
+        headers={"Authorization": f"Bearer {test_token}"},
+    )
     with patch("inneros_verified_ops.bridge_client.get_ticket", return_value={"ok": True, "ticket": {"ticket_id": "TKT-TEST-001"}}):
-        with urllib.request.urlopen(auth_url) as resp:
+        with urllib.request.urlopen(valid_req) as resp:
             assert resp.status == 200
             data = json.loads(resp.read().decode())
             assert data["ok"] is True

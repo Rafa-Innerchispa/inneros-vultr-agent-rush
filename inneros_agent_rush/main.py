@@ -52,6 +52,11 @@ class RepairRequest(BaseModel):
         return self
 
 
+REVOKED_TOKENS = frozenset({
+    "inneros-ops-token-bellini-2026",
+})
+
+
 def create_app(engine: WorkflowEngine | None = None, *, auth_token: str | None = None,
                public_demo: bool | None = None) -> FastAPI:
     if engine is None:
@@ -233,7 +238,37 @@ def create_app(engine: WorkflowEngine | None = None, *, auth_token: str | None =
 
     # === Real InnerOS Infrastructure Bridge Routes ===
     INNEROS_BRIDGE = os.getenv("INNEROS_BRIDGE_URL", "http://127.0.0.1:8795")
-    INNEROS_OPS_TOKEN = os.getenv("INNEROS_OPS_TOKEN", "inneros-ops-token-bellini-2026")
+    INNEROS_OPS_TOKEN = os.getenv("INNEROS_OPS_TOKEN", "")
+
+    def is_operator(header: str) -> bool:
+        if not header:
+            return False
+        scheme, _, credential = header.partition(" ")
+        if scheme.lower() != "bearer" or not credential.strip():
+            return False
+        token_candidate = credential.strip()
+        if token_candidate in REVOKED_TOKENS:
+            return False
+        valid_tokens = [t for t in (INNEROS_OPS_TOKEN, auth_token) if t]
+        if not valid_tokens:
+            return False
+        return any(hmac.compare_digest(token_candidate, vt) for vt in valid_tokens)
+
+    def require_operator(header: str) -> str:
+        if not header:
+            raise HTTPException(status_code=401, detail="Authentication required: operator Bearer token missing")
+        scheme, _, credential = header.partition(" ")
+        if scheme.lower() != "bearer" or not credential.strip():
+            raise HTTPException(status_code=401, detail="Invalid authorization header format. Expected 'Bearer <token>'")
+        token_candidate = credential.strip()
+        if token_candidate in REVOKED_TOKENS:
+            raise HTTPException(status_code=401, detail="Token revoked: compromised credential rejected by security policy")
+        valid_tokens = [t for t in (INNEROS_OPS_TOKEN, auth_token) if t]
+        if not valid_tokens:
+            raise HTTPException(status_code=500, detail="Server misconfigured: no operator token configured")
+        if not any(hmac.compare_digest(token_candidate, vt) for vt in valid_tokens):
+            raise HTTPException(status_code=401, detail="Unauthorized: invalid operator credentials")
+        return token_candidate
 
     def _bridge_call(method: str, path: str, payload: dict | None = None, timeout: float = 60.0) -> dict:
         import json, urllib.request, urllib.error
@@ -246,12 +281,23 @@ def create_app(engine: WorkflowEngine | None = None, *, auth_token: str | None =
         except Exception as exc:
             return {"ok": False, "error": f"Bridge error ({path}): {str(exc)}"}
 
+    @app.post("/api/live/auth/verify")
+    def live_auth_verify(authorization: str = Header(default="")):
+        require_operator(authorization)
+        return {"ok": True, "authenticated": True, "role": "operator", "mode": "authenticated_live_ops"}
+
     @app.get("/api/live/status")
-    def live_status():
+    def live_status(authorization: str = Header(default="")):
+        is_op = is_operator(authorization)
         bridge_h = _bridge_call("GET", "/health", timeout=4.0)
         return {
             "ok": True,
-            "bridge": bridge_h,
+            "authenticated": is_op,
+            "mode": "authenticated_live_ops" if is_op else "public_demo",
+            "bridge": bridge_h if is_op else {
+                "status": bridge_h.get("status", "UNAVAILABLE"),
+                "service": bridge_h.get("service", "inneros-verified-ops-bridge") if bridge_h.get("status") == "HEALTHY" else "offline",
+            },
             "sites": {
                 "bellini": {"site_id": "bellini-i-ii", "label": "Torres Bellini I-II Campus", "targets": 14},
                 "home_pcdoctor_lab": {"site_id": "home_pcdoctor_lab", "label": "Casa / PC Doctor Lab", "entities": 92}
@@ -264,58 +310,63 @@ def create_app(engine: WorkflowEngine | None = None, *, auth_token: str | None =
         }
 
     @app.post("/api/live/sweep/bellini")
-    def live_sweep_bellini():
+    def live_sweep_bellini(authorization: str = Header(default="")):
+        require_operator(authorization)
         res = _bridge_call("POST", "/api/sweep/bellini", timeout=35.0)
         if not res.get("sanitized"):
             raise HTTPException(status_code=502, detail=res.get("error", "Bellini sweep failed"))
         return res["sanitized"]
 
     @app.post("/api/live/sweep/home")
-    def live_sweep_home():
+    def live_sweep_home(authorization: str = Header(default="")):
+        require_operator(authorization)
         res = _bridge_call("POST", "/api/sweep/home", timeout=20.0)
         if not res.get("sanitized"):
             raise HTTPException(status_code=502, detail=res.get("error", "Home Lab sweep failed"))
         return res["sanitized"]
 
     @app.post("/api/live/diagnose")
-    def live_diagnose(payload: dict):
+    def live_diagnose(payload: dict, authorization: str = Header(default="")):
+        require_operator(authorization)
         prompt = payload.get("prompt", "Analyze network telemetry.")
         res = _bridge_call("POST", "/api/diagnose", payload={"prompt": prompt}, timeout=30.0)
         return res
 
     @app.post("/api/live/ticket")
-    def live_create_ticket(payload: dict):
+    def live_create_ticket(payload: dict, authorization: str = Header(default="")):
+        require_operator(authorization)
         res = _bridge_call("POST", "/api/tickets/create", payload=payload, timeout=10.0)
         if not res.get("ok"):
             raise HTTPException(status_code=502, detail=res.get("error", "Failed to create ticket in MongoDB"))
         return res
 
     @app.post("/api/live/ticket/{ticket_id}/notify")
-    def live_notify_oncall(ticket_id: str):
+    def live_notify_oncall(ticket_id: str, authorization: str = Header(default="")):
+        require_operator(authorization)
         res = _bridge_call("POST", f"/api/tickets/{ticket_id}/notify", timeout=10.0)
         if not res.get("ok"):
             raise HTTPException(status_code=502, detail=res.get("error", "Notification failed"))
         return res
 
     @app.post("/api/live/ticket/{ticket_id}/ack")
-    def live_ack_ticket(ticket_id: str):
-        res = _bridge_call("POST", f"/api/tickets/{ticket_id}/ack", timeout=10.0)
+    def live_ack_ticket(ticket_id: str, payload: dict | None = None, authorization: str = Header(default="")):
+        require_operator(authorization)
+        res = _bridge_call("POST", f"/api/tickets/{ticket_id}/ack", payload=payload or {}, timeout=10.0)
         if not res.get("ok"):
             raise HTTPException(status_code=502, detail=res.get("error", "ACK failed"))
         return res
 
     @app.post("/api/live/ticket/{ticket_id}/recheck")
-    def live_recheck_ticket(ticket_id: str):
-        res = _bridge_call("POST", f"/api/tickets/{ticket_id}/recheck", timeout=35.0)
+    def live_recheck_ticket(ticket_id: str, payload: dict | None = None, authorization: str = Header(default="")):
+        require_operator(authorization)
+        res = _bridge_call("POST", f"/api/tickets/{ticket_id}/recheck", payload=payload or {}, timeout=35.0)
         if not res.get("ok"):
             raise HTTPException(status_code=502, detail=res.get("error", "Recheck sweep failed"))
         return res
 
     @app.get("/api/private/ops/ticket/{ticket_id}")
-    def private_ticket(ticket_id: str, request: Request, authorization: str = Header(default="")):
-        query_token = request.query_params.get("token", "")
-        if authorization != f"Bearer {INNEROS_OPS_TOKEN}" and query_token != INNEROS_OPS_TOKEN:
-            raise HTTPException(status_code=401, detail="Authentication required for private infrastructure topology. Provide Authorization: Bearer <token> or ?token=<token>")
+    def private_ticket(ticket_id: str, authorization: str = Header(default="")):
+        require_operator(authorization)
         res = _bridge_call("GET", f"/api/tickets/{ticket_id}", timeout=10.0)
         if not res.get("ok"):
             raise HTTPException(status_code=404, detail="Ticket not found in InnerOS MongoDB")

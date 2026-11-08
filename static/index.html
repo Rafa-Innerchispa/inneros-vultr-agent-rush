@@ -1,206 +1,283 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="color-scheme" content="dark" />
-  <title>InnerOS Verified Operations v0.6.0 | Vultr Agent Rush</title>
-  <link rel="stylesheet" href="/static/styles.css" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="InnerOS Verified Operations: enterprise agents with proof of work">
+<title>InnerOS | Verified Operations</title>
+<link rel="stylesheet" href="/static/style.css">
+<script defer src="/static/app.js"></script>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="brand">
-        <span class="brand-badge">VULTR '26</span>
-        <div>
-          <h1>InnerOS Verified Operations <span style="font-size:0.9rem;color:var(--accent-cyan);font-weight:400;">v0.6.0</span></h1>
-          <p>Governed Autonomous IT Operations for the Future of Work · Powered by Vultr Cloud</p>
-        </div>
-      </div>
-      <div class="system-status-bar">
-        <div class="status-item">
-          <span class="status-dot"></span>
-          <span>HOST: <strong id="host-name">Vultr Miami</strong></span>
-        </div>
-        <div class="status-item">
-          <span>IP: <strong id="host-ip">45.77.164.161</strong></span>
-        </div>
-        <div class="status-item">
-          <span>FABRIC BRIDGE: <strong id="bridge-status" style="color:var(--accent-emerald);">ONLINE (AMD 1.5)</strong></span>
-        </div>
-        <div class="status-item">
-          <span>AI ENGINE: <strong id="ai-status" style="color:var(--accent-cyan);">Qwen 30B vLLM ($0.00)</strong></span>
-        </div>
-      </div>
-    </header>
-
-    <!-- Real Infrastructure Mode & Site Selector Bar -->
-    <div class="card" style="margin-bottom:1.25rem;padding:0.85rem 1.25rem;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0.75rem;background:#0b1320;border-color:rgba(56,189,248,0.25);">
-      <div style="display:flex;align-items:center;gap:0.75rem;">
-        <span style="font-weight:600;font-size:0.85rem;color:var(--accent-cyan);">ACTIVE TELEMETRY TARGET:</span>
-        <button id="btn-site-bellini" class="btn-primary" style="padding:0.4rem 0.8rem;font-size:0.8rem;">📡 Bellini I–II Campus (14 Devices)</button>
-        <button id="btn-site-home" class="btn-outline" style="padding:0.4rem 0.8rem;font-size:0.8rem;">🏠 Casa / PC Doctor Lab (92 HA Entities)</button>
-      </div>
-      <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.75rem;color:var(--text-muted);">
-        <span class="badge badge-low" style="font-size:0.7rem;">PRIVACY PRESERVED</span>
-        <span>Internal IPs & Secrets Redacted on Public Console</span>
-      </div>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-icon">✳</span><span>INNER<span class="brand-light">OS</span><small>AGENT RUSH EDITION</small></span></div>
+    <div class="side-label">WORKSPACE</div>
+    <nav aria-label="Workspace">
+      <a href="#overview" class="nav-active"><span>◫</span> Mission control</a>
+      <a href="#workflows"><span>⌘</span> Workflows</a>
+      <a href="#runs"><span>☷</span> Execution ledger</a>
+      <a href="#containment"><span>⬡</span> Containment Lab</a>
+      <a href="#tickets"><span>✓</span> Service tickets</a>
+      <a href="/judge" id="judge-link"><span>★</span> Judge walkthrough</a>
+      <a href="#architecture"><span>◇</span> Architecture</a>
+    </nav>
+    <div class="session-access">
+      <label for="operator-token">OPERATOR ACCESS</label>
+      <input id="operator-token" type="password" autocomplete="off" placeholder="Session token (optional)">
+      <button id="operator-connect" type="button">Set session token</button>
+      <div id="access-mode" class="access-note">Public demo mode</div>
     </div>
+    <div class="side-bottom">
+      <div class="platform-label"><span class="live-dot"></span> INNERCHISPA · 2026</div>
+      <div class="side-note">A workflow is not complete until its result can be verified.</div>
+    </div>
+  </aside>
 
-    <div class="grid">
-      <!-- Left Column: Governed Incident Lifecycle -->
-      <section class="card">
-        <div class="card-header">
-          <h2>Governed Incident Lifecycle Stepper</h2>
-          <span class="badge badge-high" id="active-incident-id">NO ACTIVE INCIDENT</span>
-        </div>
-
-        <div class="stepper" id="stepper">
-          <div class="step-item" id="step-1">
-            <span class="step-num">1</span>
-            <div class="step-content">
-              <div class="step-title">Ingest Real Telemetry Sweep</div>
-              <div class="step-desc" id="step-1-desc">Probing live ICMP & TCP across 14 targets through Tailscale subnet gateway.</div>
-            </div>
-          </div>
-
-          <div class="step-item" id="step-2">
-            <span class="step-num">2</span>
-            <div class="step-content">
-              <div class="step-title">Autonomous Agentic Diagnosis (Qwen 30B)</div>
-              <div class="step-desc" id="step-2-desc">Analyze network reachability and isolate root cause with zero paid API spend.</div>
-            </div>
-          </div>
-
-          <div class="step-item" id="step-3">
-            <span class="step-num">3</span>
-            <div class="step-content">
-              <div class="step-title">Propose Governed Remediation Plan</div>
-              <div class="step-desc" id="step-3-desc">Synthesize bounded, reversible remediation steps with safety invariants.</div>
-            </div>
-          </div>
-
-          <div class="step-item" id="step-4">
-            <span class="step-num">4</span>
-            <div class="step-content">
-              <div class="step-title">Create Private InnerOS Ticket</div>
-              <div class="step-desc" id="step-4-desc">Persist operational ticket in MongoDB with SHA-256 evidence receipt.</div>
-            </div>
-          </div>
-
-          <div class="step-item" id="step-5">
-            <span class="step-num">5</span>
-            <div class="step-content">
-              <div class="step-title">Operator Human-in-the-Loop ACK</div>
-              <div class="step-desc" id="step-5-desc">Dispatch internal alert to PC Doctor on-call and record operator ACK.</div>
-            </div>
-          </div>
-
-          <div class="step-item" id="step-6">
-            <span class="step-num">6</span>
-            <div class="step-content">
-              <div class="step-title">Verify Persistence (Follow-up Sweep)</div>
-              <div class="step-desc" id="step-6-desc">Execute follow-up sweep to verify if outage persists; prevent false auto-closure.</div>
-            </div>
-          </div>
-
-          <div class="step-item" id="step-7">
-            <span class="step-num">7</span>
-            <div class="step-content">
-              <div class="step-title">Cryptographic Notarization</div>
-              <div class="step-desc" id="step-7-desc">Notarize immutable SHA-256 evidence receipt chained into the ledger.</div>
-            </div>
+  <main id="overview">
+    <header class="topbar">
+      <div class="breadcrumb">InnerOS <span>/</span> Verified Operations <span>/</span> Mission Control</div>
+      <div class="top-right"><span class="environment">VULTR AGENT RUSH · 2026</span><span class="avatar">IC</span></div>
+    </header>
+    <div class="content">
+      <section class="judge-workthrough" id="judge-workthrough" aria-label="Live judge walkthrough" hidden>
+        <!-- Mode Banner: Public Demo vs Authenticated Real Operations -->
+        <div id="mode-banner" class="mode-banner public">
+          <div class="banner-badge" id="banner-badge-public">DEMO PÚBLICA</div>
+          <div class="banner-badge" id="banner-badge-private" style="display:none;"><span class="live-dot green"></span>OPERACIONES REALES · ACCESO PRIVADO</div>
+          <div class="banner-text" id="banner-text">Entorno demostrativo para evaluación. Para consultar hardware real en vivo (Bellini Campus y Casa Lab), active el acceso con su token de operador autorizado.</div>
+          <div class="banner-actions">
+            <button type="button" id="btn-unlock-operator" class="btn-sm">Acceso Operador ↗</button>
+            <button type="button" id="btn-lock-operator" class="btn-sm secondary" style="display:none;">Cerrar Sesión</button>
           </div>
         </div>
 
-        <div class="actions-bar">
-          <button id="btn-next-step" class="btn-primary">▶ Next Action Step</button>
-          <button id="btn-run-all" class="btn-outline">⚡ Run Full Automated Lifecycle</button>
-          <button id="btn-reset" class="btn-outline">↺ New Live Sweep</button>
+        <!-- Adenda P1: Live Operational Dashboard -->
+        <div class="ops-dashboard-grid" id="ops-dashboard">
+          <div class="ops-card">
+            <span class="ops-card-label">DISPOSITIVOS SUPERVISADOS</span>
+            <div class="ops-card-val">106 <em>total</em></div>
+            <span class="ops-card-sub">14 Bellini · 92 Casa Lab</span>
+          </div>
+          <div class="ops-card">
+            <span class="ops-card-label">ESTADO RED BELLINI I-II</span>
+            <div class="ops-card-val"><span class="indicator green"></span>7 Online <span class="indicator orange"></span>7 Offline</div>
+            <span class="ops-card-sub">Switch Admin & APs caídos</span>
+          </div>
+          <div class="ops-card">
+            <span class="ops-card-label">INFERENCIA LOCAL SRE</span>
+            <div class="ops-card-val">Qwen 30B <small>AMD 1.5</small></div>
+            <span class="ops-card-sub">Gasto: $0.00 (Local Invariant)</span>
+          </div>
+          <div class="ops-card">
+            <span class="ops-card-label">INCIDENTES ACTIVOS</span>
+            <div class="ops-card-val"><span class="badge-p1">P1</span> 1 Crítico <span class="badge-p2">P2</span> 1 Lab</div>
+            <span class="ops-card-sub">Gestión en tiempo real</span>
+          </div>
         </div>
 
-        <div style="margin-top:1.25rem;">
-          <h3 style="font-size:0.95rem;margin-bottom:0.5rem;color:var(--text-muted);">Cryptographic Evidence Receipt & Private Access</h3>
-          <div class="hash-box" id="evidence-hash-box">
-            Awaiting incident resolution to generate tamper-evident SHA-256 evidence receipt...
+        <div class="judge-head">
+          <div>
+            <div class="eyebrow">OPERACIONES VERIFICADAS / PRUEBA DE INFRAESTRUCTURA REAL</div>
+            <h2>Operaciones verificables sobre dispositivos reales.</h2>
+            <p>Conexión directa al nodo InnerOS AMD 1.5 mediante túnel cifrado inverso. Consulta hardware real, ejecuta inferencia local con Qwen 30B ($0.00 de gasto) y registra evidencias criptográficas SHA-256 inmutables. Cero estados fingidos ni simulaciones encubiertas.</p>
           </div>
-          <div id="private-ticket-link-container" style="margin-top:0.75rem;display:none;">
-            <a id="private-ticket-link" href="#" target="_blank" class="btn-outline" style="display:inline-flex;font-size:0.8rem;text-decoration:none;border-color:var(--accent-amber);color:var(--accent-amber);">
-              🔒 Open Authenticated Private Ticket Topology (Authorized Ops Only)
-            </a>
+          <div class="judge-head-right">
+            <span class="judge-mode" id="judge-mode">Verificando servidor…</span>
+            <div class="judge-site-wrapper">
+              <label for="judge-site-select" class="judge-site-label">SITIO ACTIVO:</label>
+              <select id="judge-site-select" class="judge-site-select">
+                <option value="bellini">Torres Bellini I-II Campus (Incidente Activo: 14 objetivos)</option>
+                <option value="home">Casa / PC Doctor Lab (Inventario: 92 dispositivos)</option>
+              </select>
+            </div>
           </div>
+        </div>
+
+        <div class="judge-steps">
+          <article class="judge-step">
+            <span class="judge-number">01 / SONDEO REAL</span>
+            <h3>Sondear Hardware Real</h3>
+            <p>Ejecuta sondeo ICMP/TCP en tiempo real en la red del campus. Identifica switch de administración y APs caídos.</p>
+            <button type="button" id="judge-start" class="judge-btn">Ejecutar sondeo real</button>
+            <div class="judge-step-result" id="judge-step-one" role="status" aria-live="polite">No ejecutado aún</div>
+          </article>
+
+          <article class="judge-step">
+            <span class="judge-number">02 / IA LOCAL SRE</span>
+            <h3>Diagnosticar con Qwen 30B</h3>
+            <p>Inferencia local vLLM en AMD 1.5 ($0.00). Deducción determinista de causa raíz y protocolo de contención.</p>
+            <button type="button" id="judge-verify" class="judge-btn" disabled>Diagnosticar con Qwen 30B</button>
+            <div class="judge-step-result" id="judge-step-two" role="status" aria-live="polite">Esperando paso 1</div>
+          </article>
+
+          <article class="judge-step">
+            <span class="judge-number">03 / TICKET EN MONGODB</span>
+            <h3>Crear Ticket Operativo</h3>
+            <p>Registra ticket formal P1 en MongoDB (ops_tickets) con ID inmutable, SHA-256 y clasificación de impacto.</p>
+            <button type="button" id="judge-complete" class="judge-btn" disabled>Crear Ticket en MongoDB</button>
+            <div class="judge-step-result" id="judge-step-three" role="status" aria-live="polite">Esperando diagnóstico</div>
+          </article>
+
+          <article class="judge-step">
+            <span class="judge-number">04 / NOTIFICACIÓN & ACK</span>
+            <h3>Notificar y Registrar ACK</h3>
+            <p>Despacha alerta interna al lead de guardia (rafael) y registra acuse técnico humano (cero auto-ACK).</p>
+            <div class="step-subactions">
+              <button type="button" id="judge-notify" class="judge-btn secondary" disabled>Despachar alerta interna</button>
+              <div id="ack-editor-box" class="ack-editor-box" style="display:none;">
+                <input id="ack-operator-name" class="ack-input" value="Rafael Lopez (SRE On-Call)" placeholder="Operador">
+                <textarea id="ack-operator-note" class="ack-textarea" rows="2" placeholder="Nota técnica de acuse (12+ caracteres)">Recepción confirmada. Switch admin Hikvision sin respuesta. Procediendo a inspección física en rack.</textarea>
+                <button type="button" id="judge-ack-btn" class="judge-btn" style="margin-top:6px;">Registrar ACK Humano</button>
+              </div>
+            </div>
+            <div class="judge-step-result" id="judge-step-notify-ack" role="status" aria-live="polite">Esperando ticket</div>
+          </article>
+
+          <article class="judge-step">
+            <span class="judge-number">05 / RECHECK FÍSICO</span>
+            <h3>Recheck de Hardware</h3>
+            <p>Vuelve a sondear equipos. Confirma persistencia física y rehúsa cierre fraudulento (Zero-Fabrication).</p>
+            <button type="button" id="judge-recheck" class="judge-btn" disabled>Recheck estado físico</button>
+            <div class="judge-step-result" id="judge-step-four" role="status" aria-live="polite">Esperando ticket</div>
+          </article>
+        </div>
+
+        <div class="judge-proof-container">
+          <div class="judge-proof" id="judge-proof" aria-live="polite">Seleccione el sitio y pulse 'Ejecutar sondeo real' para iniciar el triaje de hardware.</div>
+          <div class="judge-proof-actions">
+            <button type="button" id="btn-view-topology" class="btn-proof-action" disabled>↗ Abrir Topología Privada (Gated)</button>
+            <button type="button" id="btn-export-report" class="btn-proof-action" disabled>⬇ Descargar Informe Técnico</button>
+          </div>
+        </div>
+
+        <div id="judge-telemetry-detail" class="judge-telemetry-detail">
+          <div class="telemetry-detail-header">
+            <strong id="telemetry-detail-title" class="telemetry-detail-title">Telemetría de Hardware Real</strong>
+            <span id="telemetry-provenance" class="telemetry-provenance">Bellini Network Guardian · AMD 1.5</span>
+          </div>
+          <pre id="telemetry-detail-content" class="telemetry-detail-content"></pre>
         </div>
       </section>
-
-      <!-- Right Column: Containment Lab & Verification -->
-      <div>
-        <section class="card" style="margin-bottom:1.5rem;">
-          <div class="card-header">
-            <h2>Containment Lab</h2>
-            <span class="badge badge-medium" id="containment-badge">FAIL-CLOSED</span>
-          </div>
-          <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem;">
-            Guarantees Blast Radius Zero by verifying sandboxed boundaries before granting worker execution.
-          </p>
-
-          <div class="scenario-card">
-            <div style="display:flex;justify-content:space-between;font-weight:600;font-size:0.85rem;">
-              <span>1. Egress Leak Prevention</span>
-              <span id="sc-1-status" style="color:var(--accent-amber);">PENDING</span>
-            </div>
-            <div style="font-size:0.75rem;color:var(--text-muted);">Blocks unauthorized network egress to unvetted external hosts.</div>
-          </div>
-
-          <div class="scenario-card">
-            <div style="display:flex;justify-content:space-between;font-weight:600;font-size:0.85rem;">
-              <span>2. Credential Exfiltration Defense</span>
-              <span id="sc-2-status" style="color:var(--accent-amber);">PENDING</span>
-            </div>
-            <div style="font-size:0.75rem;color:var(--text-muted);">Enforces read-only root and AppArmor isolation on sensitive volumes.</div>
-          </div>
-
-          <div class="scenario-card">
-            <div style="display:flex;justify-content:space-between;font-weight:600;font-size:0.85rem;">
-              <span>3. Filesystem Quarantine</span>
-              <span id="sc-3-status" style="color:var(--accent-amber);">PENDING</span>
-            </div>
-            <div style="font-size:0.75rem;color:var(--text-muted);">Discards diffs in ephemeral container layer upon run termination.</div>
-          </div>
-
-          <button id="btn-run-containment" class="btn-outline" style="width:100%;justify-content:center;margin-top:0.5rem;">
-            🛡 Validate Containment Boundaries
-          </button>
-        </section>
-
-        <section class="card">
-          <div class="card-header">
-            <h2>Independent Notary Verification</h2>
-          </div>
-          <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.75rem;">
-            Verify any operational SHA-256 hash against the tamper-evident ledger.
-          </p>
-          <input type="text" id="verify-input" placeholder="Paste SHA-256 hash..." style="width:100%;padding:0.6rem;background:#06090e;border:1px solid var(--bg-card-border);border-radius:6px;color:var(--accent-cyan);font-family:var(--font-mono);font-size:0.8rem;margin-bottom:0.75rem;" />
-          <button id="btn-verify-hash" class="btn-outline" style="width:100%;justify-content:center;">
-            🔍 Audit Hash Invariant
-          </button>
-          <div id="verify-result" style="margin-top:0.75rem;font-size:0.8rem;font-family:var(--font-mono);"></div>
-        </section>
+      <div class="hero">
+        <div class="eyebrow"><span class="small-dot"></span> VERIFIABLE AUTONOMY</div>
+        <h1>Agents that do the work.<br><em>Evidence that proves it.</em></h1>
+        <p>From a real business incident to a documented, traceable outcome. Policy-driven workflows, isolated code execution, and tamper-evident logs.</p>
+        <div class="hero-tags"><span>LOCAL-FIRST AI</span><span>VULTR DEPLOYMENT TARGET</span><span>SHA-256 EVIDENCE</span></div>
       </div>
+
+      <section class="stats" aria-label="Platform status">
+        <article class="stat"><div class="stat-label">WORKFLOW ENGINE</div><div class="stat-value" id="engine-status">Checking…</div><div class="stat-sub">Server-side orchestration</div></article>
+        <article class="stat"><div class="stat-label">EXECUTION SANDBOX</div><div class="stat-value" id="sandbox-status"><span class="indicator orange"></span>Checking</div><div class="stat-sub">Disposable, no-network containers</div></article>
+        <article class="stat"><div class="stat-label">INFERENCE ENGINE</div><div class="stat-value" id="model-status">Checking</div><div class="stat-sub">Qwen local / rules fallback</div></article>
+        <article class="stat"><div class="stat-label">VERIFIED RUNS</div><div class="stat-value" id="run-count">0</div><div class="stat-sub">Persistent evidence ledger</div></article>
+      </section>
+
+      <div class="section-title" id="workflows"><div><div class="eyebrow">01 / ACTUAL WORK</div><h2>Execute a workflow</h2></div><span class="section-annotation">No simulated execution results</span></div>
+      <section class="workflows">
+        <article class="workflow-card accent-cyan">
+          <div class="card-head"><span class="card-icon">↗</span><span class="chip">AVAILABLE NOW</span></div>
+          <h3>Incident → Action Plan</h3>
+          <p>Turn a customer's infrastructure issue into a classified priority, an actionable service plan, and a SHA-256 evidence trail.</p>
+          <label for="incident-title">INCIDENT</label>
+          <input id="incident-title" maxlength="160" value="Residential property uplink SFP1 offline">
+          <label for="incident-description">WHAT HAPPENED</label>
+          <textarea id="incident-description" rows="3" maxlength="5000">Administration switch lost its fiber uplink. Cameras remain visible locally but the control room cannot reach remote devices.</textarea>
+          <label for="incident-customer">CUSTOMER</label>
+          <input id="incident-customer" maxlength="100" value="Demo property">
+          <p class="privacy-note">Public-demo submissions are visible to other visitors. Use fictional examples only.</p>
+          <button id="triage-btn" class="primary">Run operational workflow <span>↗</span></button>
+        </article>
+        <article class="workflow-card accent-purple">
+          <div class="card-head"><span class="card-icon purple">⌘</span><span class="chip lavender">DOCKER REQUIRED</span></div>
+          <h3>Issue → Verified Repair</h3>
+          <p>Reproduce a bug, generate a candidate patch, rerun assertions inside an ephemeral container, and record the outcome.</p>
+          <label for="case-select">EXECUTION SCENARIO</label>
+          <select id="case-select"><option value="uptime_boundary">Uptime boundary bug</option><option value="sla_sign">SLA calculation bug</option><option value="runaway_loop">Containment: infinite loop</option></select>
+          <div class="warning-line">Untrusted code is never executed in the web app process.</div>
+          <button id="repair-btn" class="secondary">Run isolated verification <span>↗</span></button>
+          <div class="sandbox-guard" id="sandbox-guard"></div>
+        </article>
+      </section>
+      <section class="containment-panel" id="containment" aria-labelledby="containment-title">
+        <div class="containment-copy">
+          <div class="eyebrow">02 / SECOND TECHNICAL FRONT</div>
+          <h2 id="containment-title">Containment Lab. A proof you can challenge.</h2>
+          <p>Run one of three fixed safety probes in a disposable Docker container. The backend records its real outcome and independently checks container removal. No worker attached? The test is marked <strong>BLOCKED</strong>, not silently simulated.</p>
+          <p class="privacy-note">This is a technical safety demonstration, not a guarantee against container escape. Blast Radius Zero still requires Vultr Serverless Inference and execution on Vultr.</p>
+        </div>
+        <div class="containment-controls">
+          <label for="containment-case">SELECT ISOLATION PROBE</label>
+          <select id="containment-case">
+            <option value="network_egress">01 · Outbound network denied</option>
+            <option value="read_only_root">02 · Read-only root filesystem</option>
+            <option value="runaway_timeout">03 · Infinite loop stopped + cleanup verified</option>
+          </select>
+          <button type="button" id="containment-btn" class="secondary">Run live containment check ↗</button>
+          <div id="containment-availability" class="containment-availability" role="status">Checking isolated worker…</div>
+          <div id="containment-result" class="containment-result" role="status" aria-live="polite">No containment test run yet.</div>
+        </div>
+      </section>
+      <section class="result-panel" id="result-panel" hidden>
+        <div class="result-top"><div><div class="eyebrow">LIVE RESULT</div><h2 id="result-title">Execution</h2></div><span class="status-pill" id="result-status">Pending</span></div>
+        <p id="result-summary"></p>
+        <div class="trace" id="result-trace"></div>
+        <div class="artifact"><div class="artifact-header">EVIDENCE ARTIFACT <button id="copy-artifact" class="copy-btn" type="button">Copy</button></div><pre id="artifact-content">—</pre></div>
+        <div class="hash-row"><span>LAST EVIDENCE HASH</span><code id="result-hash">—</code></div>
+        <div class="hash-row"><span>INTEGRITY</span><strong id="result-integrity">Verification pending</strong></div>
+      </section>
+      <div class="section-title" id="runs"><div><div class="eyebrow">03 / AUDITABILITY</div><h2>Execution ledger</h2></div><button id="refresh" class="text-button">Refresh ↻</button></div>
+      <section class="ledger"><div class="ledger-heading"><span>WORKFLOW</span><span>STATUS</span><span>EVIDENCE</span></div><div id="run-list" class="run-list"><p class="empty">No executions yet. Run a workflow to create a trace.</p></div></section>
+      <div class="section-title ticket-heading" id="tickets"><div><div class="eyebrow">04 / CASE LIFECYCLE</div><h2>Service ticket board</h2></div><span class="section-annotation">Every transition leaves an audit event</span></div>
+      <section class="ticket-board" id="ticket-board" aria-label="Service ticket board"><p class="empty">No service tickets yet. Run incident triage to open one.</p></section>
+      <section id="architecture" class="architecture"><div class="eyebrow">05 / THE CONTROL PLANE</div><h2>Build for proof, not promises.</h2><div class="arch-grid"><div><strong>01 · PLAN</strong><p>Classify business impact and define a bounded task.</p></div><div><strong>02 · EXECUTE</strong><p>Send risky code into short-lived isolated containers.</p></div><div><strong>03 · VERIFY</strong><p>Test results and capture actual execution status.</p></div><div><strong>04 · ATTEST</strong><p>Append a SHA-256-linked evidence trail.</p></div></div></section>
+      <footer>InnerOS / InnerChispa · Vultr Agent Rush 2026 · Powering the Future of Work <span>BUILD 0.6.0</span></footer>
     </div>
+  </main>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
 
-    <!-- Bottom: Live Audit Stream -->
-    <section class="card">
-      <div class="card-header">
-        <h2>Live Operation Telemetry & Provenance Logs</h2>
-        <span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--accent-cyan);">IMMUTABLE AUDIT STREAM</span>
+<!-- Modal: Private Topology View (Gated) -->
+<div id="topology-modal" class="modal-backdrop" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">
+        <span class="badge-gated">ACCESO PRIVADO RESTRINGIDO</span>
+        <h3>Topología de Infraestructura Real (MongoDB ops_tickets)</h3>
       </div>
-      <div class="terminal-logs" id="terminal-logs">
-        <div class="terminal-line">[SYSTEM_INIT] InnerOS Verified Operations v0.6.0 online on Vultr Cloud Compute node.</div>
-        <div class="terminal-line">[BRIDGE_ATTACHED] Egress tunnel active: InnerOS AMD 1.5 -> Vultr Miami (127.0.0.1:8795).</div>
-      </div>
-    </section>
+      <button type="button" id="modal-close" class="modal-close-btn" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-meta-bar" id="modal-meta-bar">Autenticado vía Authorization: Bearer &lt;operator_token&gt;</div>
+      <pre id="topology-modal-content" class="modal-code">Cargando datos privados...</pre>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="modal-copy-btn" class="btn-sm secondary">Copiar JSON</button>
+      <button type="button" id="modal-ok-btn" class="btn-sm">Cerrar</button>
+    </div>
   </div>
+</div>
 
-  <script src="/static/app.js"></script>
+<!-- Modal: Operator Token Unlock -->
+<div id="token-modal" class="modal-backdrop" style="display:none;">
+  <div class="modal-box modal-box-sm">
+    <div class="modal-header">
+      <div class="modal-title">
+        <h3>Desbloquear Modo Operador</h3>
+      </div>
+      <button type="button" id="token-modal-close" class="modal-close-btn" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-desc">Ingrese el token de operador para autenticar sus consultas contra la telemetría real de Bellini Campus y Casa Lab en InnerOS AMD 1.5:</p>
+      <input type="password" id="modal-token-input" class="modal-input" placeholder="Bearer Token de Operador" autocomplete="off">
+      <div id="modal-token-error" class="modal-error"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="modal-token-cancel" class="btn-sm secondary">Cancelar</button>
+      <button type="button" id="modal-token-submit" class="btn-sm">Validar y Activar</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

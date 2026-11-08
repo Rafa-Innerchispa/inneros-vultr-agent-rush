@@ -19,6 +19,7 @@ from .engine import ENGINE, IncidentEngineError, InvalidStateTransitionError, Un
 from . import bridge_client
 
 STATIC_DIR = Path(__file__).resolve().parent.parent.parent / "static"
+REVOKED_TOKENS = frozenset({"inneros-ops-token-bellini-2026"})
 
 
 class VerifiedOpsHandler(BaseHTTPRequestHandler):
@@ -141,14 +142,27 @@ class VerifiedOpsHandler(BaseHTTPRequestHandler):
 
         if path.startswith("/api/private/ops/ticket/"):
             auth_header = self.headers.get("Authorization", "")
-            query_token = parse_qs(parts.query).get("token", [""])[0]
-            expected = f"Bearer {bridge_client.INNEROS_OPS_TOKEN}"
-            if auth_header != expected and query_token != bridge_client.INNEROS_OPS_TOKEN:
+            scheme, _, token_candidate = auth_header.partition(" ")
+            token_candidate = token_candidate.strip()
+
+            if token_candidate in REVOKED_TOKENS:
+                self._json(
+                    HTTPStatus.UNAUTHORIZED,
+                    {"error": "Token revoked: compromised credential rejected by security policy"},
+                )
+                return
+
+            expected_token = bridge_client.INNEROS_OPS_TOKEN
+            if (
+                not expected_token
+                or scheme.lower() != "bearer"
+                or token_candidate != expected_token
+            ):
                 self._json(
                     HTTPStatus.UNAUTHORIZED,
                     {
                         "error": "Authentication required for private infrastructure topology",
-                        "hint": f"Provide Authorization: Bearer <token> or query parameter ?token=<token>",
+                        "hint": "Provide valid operator credentials via Authorization: Bearer <token>",
                     },
                 )
                 return

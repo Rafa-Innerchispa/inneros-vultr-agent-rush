@@ -12,7 +12,7 @@ import urllib.request
 from typing import Any, Dict, Optional
 
 BRIDGE_URL = os.environ.get("INNEROS_BRIDGE_URL", "http://127.0.0.1:8795")
-INNEROS_OPS_TOKEN = os.environ.get("INNEROS_OPS_TOKEN", "inneros-ops-token-bellini-2026")
+INNEROS_OPS_TOKEN = os.environ.get("INNEROS_OPS_TOKEN", "")
 
 
 def sanitize_bellini_sample(sample: dict) -> dict:
