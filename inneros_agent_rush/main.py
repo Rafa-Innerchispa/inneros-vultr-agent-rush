@@ -92,11 +92,33 @@ def create_app(engine: WorkflowEngine | None = None, *, auth_token: str | None =
         )
         return response
 
-    def authorized(header: str) -> bool:
-        if not auth_token:
+    # === Security & Authorization Helpers ===
+    INNEROS_BRIDGE = os.getenv("INNEROS_BRIDGE_URL", "http://127.0.0.1:8795")
+    INNEROS_OPS_TOKEN = os.getenv("INNEROS_OPS_TOKEN", "")
+
+    def is_operator(header: str) -> bool:
+        if not header:
             return False
         scheme, _, credential = header.partition(" ")
-        return scheme.lower() == "bearer" and hmac.compare_digest(credential, auth_token)
+        if scheme.lower() != "bearer" or not credential.strip():
+            return False
+        token_candidate = credential.strip()
+        if token_candidate in REVOKED_TOKENS:
+            return False
+        valid_tokens = [t for t in (INNEROS_OPS_TOKEN, auth_token) if t]
+        if not valid_tokens:
+            return False
+        return any(hmac.compare_digest(token_candidate, vt) for vt in valid_tokens)
+
+    def authorized(header: str) -> bool:
+        return is_operator(header)
+
+    def _sanitize_public_str(s: str) -> str:
+        if not isinstance(s, str):
+            return s
+        for token in ("Torres Bellini I-II Campus", "Torres Bellini", "Bellini", "DS-3E1510P-EI/M"):
+            s = s.replace(token, "Campus Demostrativo")
+        return s
 
     def require_access(header: str, *, custom: bool = False):
         if authorized(header):
@@ -174,9 +196,12 @@ def create_app(engine: WorkflowEngine | None = None, *, auth_token: str | None =
     @app.get("/api/tickets")
     def tickets(authorization: str = Header(default="")):
         require_access(authorization)
-        results = engine.store.recent_tickets(public_only=not authorized(authorization))
-        return [{"id": t["id"], "run_id": t["run_id"], "title": t["title"],
-                 "customer": t["customer"], "status": t["status"],
+        is_op = is_operator(authorization)
+        results = engine.store.recent_tickets(public_only=not is_op)
+        return [{"id": t["id"], "run_id": t["run_id"],
+                 "title": t["title"] if is_op else _sanitize_public_str(t["title"]),
+                 "customer": t["customer"] if is_op else _sanitize_public_str(t["customer"]),
+                 "status": t["status"],
                  "priority": t["priority"], "category": t["category"],
                  "updated_at": t["updated_at"], "last_evidence_hash": t["history"][-1]["hash"]}
                 for t in results]
@@ -184,10 +209,14 @@ def create_app(engine: WorkflowEngine | None = None, *, auth_token: str | None =
     @app.get("/api/tickets/{ticket_id}")
     def ticket_detail(ticket_id: str, authorization: str = Header(default="")):
         require_access(authorization)
+        is_op = is_operator(authorization)
         ticket = engine.store.one_ticket(ticket_id)
-        if ticket is None or (not authorized(authorization) and not ticket.get("public_demo")):
+        if ticket is None or (not is_op and not ticket.get("public_demo")):
             raise HTTPException(status_code=404, detail="Ticket not found")
         ticket["evidence_chain_valid"] = event_chain_valid(ticket["history"])
+        if not is_op:
+            ticket["title"] = _sanitize_public_str(ticket.get("title", ""))
+            ticket["customer"] = _sanitize_public_str(ticket.get("customer", ""))
         return ticket
 
     @app.post("/api/tickets/{ticket_id}/action")
@@ -210,18 +239,23 @@ def create_app(engine: WorkflowEngine | None = None, *, auth_token: str | None =
     @app.get("/api/runs")
     def runs(authorization: str = Header(default="")):
         require_access(authorization)
-        return [{"id": r["id"], "kind": r["kind"], "title": r["title"],
+        is_op = is_operator(authorization)
+        return [{"id": r["id"], "kind": r["kind"],
+                 "title": r["title"] if is_op else _sanitize_public_str(r["title"]),
                  "status": r["status"], "created_at": r["created_at"],
                  "evidence_hash": r["events"][-1]["hash"] if r["events"] else None}
-                for r in engine.store.recent(public_only=not authorized(authorization))]
+                for r in engine.store.recent(public_only=not is_op)]
 
     @app.get("/api/runs/{run_id}")
     def run_detail(run_id: str, authorization: str = Header(default="")):
         require_access(authorization)
+        is_op = is_operator(authorization)
         result = engine.store.one(run_id)
-        if result is None or (not authorized(authorization) and not result.get("public_demo")):
+        if result is None or (not is_op and not result.get("public_demo")):
             raise HTTPException(status_code=404, detail="Run not found")
         result["evidence_chain_valid"] = event_chain_valid(result["events"])
+        if not is_op:
+            result["title"] = _sanitize_public_str(result.get("title", ""))
         return result
 
     @app.get("/api/runs/{run_id}/verify")
@@ -243,23 +277,6 @@ def create_app(engine: WorkflowEngine | None = None, *, auth_token: str | None =
 
 
     # === Real InnerOS Infrastructure Bridge Routes ===
-    INNEROS_BRIDGE = os.getenv("INNEROS_BRIDGE_URL", "http://127.0.0.1:8795")
-    INNEROS_OPS_TOKEN = os.getenv("INNEROS_OPS_TOKEN", "")
-
-    def is_operator(header: str) -> bool:
-        if not header:
-            return False
-        scheme, _, credential = header.partition(" ")
-        if scheme.lower() != "bearer" or not credential.strip():
-            return False
-        token_candidate = credential.strip()
-        if token_candidate in REVOKED_TOKENS:
-            return False
-        valid_tokens = [t for t in (INNEROS_OPS_TOKEN, auth_token) if t]
-        if not valid_tokens:
-            return False
-        return any(hmac.compare_digest(token_candidate, vt) for vt in valid_tokens)
-
     def require_operator(header: str) -> str:
         if not header:
             raise HTTPException(status_code=401, detail="Authentication required: operator Bearer token missing")

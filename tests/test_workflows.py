@@ -253,3 +253,23 @@ def test_code_repair_cannot_be_marked_completed_without_cleanup(tmp_path):
     assert report["status"] == "needs_review"
     assert report["execution"]["candidate"]["passed"] is True
     assert report["execution"]["candidate"]["cleanup_verified"] is None
+
+
+def test_public_tickets_and_runs_sanitize_private_customer_labels(tmp_path):
+    app = create_app(new_engine(tmp_path), auth_token="operator-secret", public_demo=True)
+    with TestClient(app) as client:
+        res = client.post("/api/triage", json={
+            "title": "Torres Bellini Switch Anomaly",
+            "customer": "Torres Bellini I-II Campus",
+            "description": "Simulated hardware alert"
+        }).json()
+        public_board = client.get("/api/tickets").json()
+        assert len(public_board) == 1
+        assert "Torres Bellini" not in public_board[0]["customer"]
+        assert "Bellini" not in public_board[0]["title"]
+        assert public_board[0]["customer"] == "Campus Demostrativo"
+
+        headers = {"Authorization": "Bearer operator-secret"}
+        op_board = client.get("/api/tickets", headers=headers).json()
+        assert op_board[0]["customer"] == "Torres Bellini I-II Campus"
+
