@@ -24,3 +24,4 @@ with sync_playwright() as p:
     for el in wide[:15]:
         print(el)
     browser.close()
+

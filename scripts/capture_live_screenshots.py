@@ -7,9 +7,9 @@ import sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-URL = "https://45.77.164.161.sslip.io/judge"
-TOKEN = "sec_ops_vultr_58085a2638f64246547b956c617e6492"
-OUT_DIR = Path("/tmp/vultr-screenshots")
+URL = os.environ.get("INNEROS_APP_URL", "https://45.77.164.161.sslip.io/judge")
+TOKEN = os.environ.get("INNEROS_OPS_TOKEN", "")
+OUT_DIR = Path(os.environ.get("SCREENSHOTS_DIR", "/tmp/vultr-screenshots"))
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 with sync_playwright() as p:
@@ -91,3 +91,4 @@ with sync_playwright() as p:
 
     browser.close()
     print("All screenshots successfully captured!")
+

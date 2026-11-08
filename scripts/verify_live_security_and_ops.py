@@ -18,9 +18,14 @@ import urllib.request
 import urllib.error
 import ssl
 
-BASE_URL = "https://45.77.164.161.sslip.io"
-REVOKED_TOKEN = "inneros-ops-token-bellini-2026"
-VALID_TOKEN = "sec_ops_vultr_58085a2638f64246547b956c617e6492"
+BASE_URL = os.environ.get("INNEROS_APP_URL", "https://45.77.164.161.sslip.io")
+REVOKED_TOKENS = [
+    "inneros-ops-token-bellini-2026",
+    "sec_ops_vultr_58085a2638f64246547b956c617e6492",
+]
+VALID_TOKEN = os.environ.get("INNEROS_OPS_TOKEN", "")
+if not VALID_TOKEN:
+    raise ValueError("INNEROS_OPS_TOKEN environment variable is required to run live operational verification.")
 
 ctx = ssl.create_default_context()
 
@@ -54,14 +59,15 @@ assert b.get("authenticated") is False
 assert b.get("mode") == "public_demo"
 
 print("\n=== 2. VERIFYING SECURITY: REVOKED TOKEN REJECTION (P0) ===")
-s, b = req("POST", "/api/live/auth/verify", token=REVOKED_TOKEN)
-print(f"POST /api/live/auth/verify (revoked token) -> HTTP {s} | detail: {b.get('detail')}")
-assert s == 401
-assert "revoked" in str(b.get("detail", "")).lower()
+for r_token in REVOKED_TOKENS:
+    s, b = req("POST", "/api/live/auth/verify", token=r_token)
+    print(f"POST /api/live/auth/verify (revoked token: {r_token[:12]}...) -> HTTP {s} | detail: {b.get('detail')}")
+    assert s == 401
+    assert "revoked" in str(b.get('detail', "")).lower()
 
-s, b = req("POST", "/api/live/sweep/bellini", token=REVOKED_TOKEN)
-print(f"POST /api/live/sweep/bellini (revoked token) -> HTTP {s} | detail: {b.get('detail')}")
-assert s == 401
+    s, b = req("POST", "/api/live/sweep/bellini", token=r_token)
+    print(f"POST /api/live/sweep/bellini (revoked token: {r_token[:12]}...) -> HTTP {s} | detail: {b.get('detail')}")
+    assert s == 401
 
 print("\n=== 3. VERIFYING SECURITY: QUERY PARAMETER LEAK REJECTION (P0) ===")
 # Query parameter should be rejected

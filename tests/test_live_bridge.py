@@ -69,16 +69,20 @@ def test_private_ticket_endpoint_requires_auth():
     except urllib.error.HTTPError as exc:
         assert exc.code == 401
 
-    # 2. Compromised / revoked token must be rejected with 401
-    revoked_req = urllib.request.Request(
-        url,
-        headers={"Authorization": "Bearer inneros-ops-token-bellini-2026"},
-    )
-    try:
-        urllib.request.urlopen(revoked_req)
-        assert False, "Expected 401 Unauthorized for revoked token"
-    except urllib.error.HTTPError as exc:
-        assert exc.code == 401
+    # 2. Compromised / revoked tokens must be rejected with 401
+    for revoked_token in [
+        "inneros-ops-token-bellini-2026",
+        "sec_ops_vultr_58085a2638f64246547b956c617e6492",
+    ]:
+        revoked_req = urllib.request.Request(
+            url,
+            headers={"Authorization": f"Bearer {revoked_token}"},
+        )
+        try:
+            urllib.request.urlopen(revoked_req)
+            assert False, f"Expected 401 Unauthorized for revoked token {revoked_token}"
+        except urllib.error.HTTPError as exc:
+            assert exc.code == 401
 
     # 3. Query string token leak is strictly denied (must return 401)
     query_url = f"{url}?token={test_token}"

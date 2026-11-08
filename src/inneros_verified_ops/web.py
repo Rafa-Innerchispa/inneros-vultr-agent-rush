@@ -19,7 +19,10 @@ from .engine import ENGINE, IncidentEngineError, InvalidStateTransitionError, Un
 from . import bridge_client
 
 STATIC_DIR = Path(__file__).resolve().parent.parent.parent / "static"
-REVOKED_TOKENS = frozenset({"inneros-ops-token-bellini-2026"})
+REVOKED_TOKENS = frozenset({
+    "inneros-ops-token-bellini-2026",
+    "sec_ops_vultr_58085a2638f64246547b956c617e6492",
+})
 
 
 class VerifiedOpsHandler(BaseHTTPRequestHandler):

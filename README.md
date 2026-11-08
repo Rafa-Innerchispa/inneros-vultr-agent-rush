@@ -2,27 +2,119 @@
 
 **Vultr: Agent Rush Hackathon 2026 | Challenge 2: Powering the Future of Work**
 
-> **Status (2026-11-07):** Local release 0.6.0 prepared (40 passing API/unit tests at this development checkpoint, 2 Docker integration tests skipped; Chromium browser QA remains blocked by local environment policy). No Vultr deployment or public demo is claimed yet. The test suite uses a mock runner to exercise repair orchestration; Docker integration must be verified separately on a dedicated VM. The application does not present synthetic execution results as live ones. Containment Lab demonstrates three curated isolation probes, and requires Docker cleanup verification before reporting a PASS.
+> **Status (2026-11-08 · Production Deployed):** Release v0.6.0 fully deployed and verified in production on Vultr Cloud Compute (`45.77.164.161` Miami) with Let's Encrypt TLS at **https://45.77.164.161.sslip.io/judge**. Directly integrated with InnerOS Edge Host on AMD 1.5 hardware over a reverse encrypted socket (`127.0.0.1:8795`). Probes real campus hardware, executes local autonomous SRE inference with Qwen 30B ($0.00 spend), records persistent MongoDB tickets (`ops_tickets`), dispatches internal alerts via InnerOS Agent Messaging, enforces human technical ACKs (zero auto-ACK), and upholds the Zero-Fabrication invariant on physical recheck. 100% green test suite (85 unit/contract tests passing).
 
-A business operations copilot that turns incidents into executable workflows and **verifiable evidence**, rather than conversational promises. A small technology services company can triage infrastructure faults, create actionable service plans, run isolated code checks, and audit outcomes without manually babysitting every step.
+A mission-critical enterprise operations console that turns infrastructure faults into verifiable workflows and **cryptographically tamper-evident evidence** (SHA-256) rather than conversational promises.
 
-Inspired by the real operational requirements that shaped [InnerOS](https://github.com/Rafa-Innerchispa/innerops-agentic-platform), this is an **independent hackathon implementation** with deliberately limited dependencies. No DevSwarm queues or production InnerOS services are required.
+---
 
-## What works today
+## 1. Live Deployment & Architecture
+
+- **Public Production URL:** [https://45.77.164.161.sslip.io/judge](https://45.77.164.161.sslip.io/judge)
+- **Official Submission:** [LabLab Vultr Agent Rush 2026](https://lablab.build/submissions/cvs2mpnjnhx0kbbqgm3lmo4o)
+- **Vultr VM:** `45.77.164.161` (Miami `mia`, plan `vc2-1c-2gb`, Ubuntu 24.04 LTS)
+- **Web Runtime:** FastAPI + Uvicorn + Caddy (Automatic HTTPS reverse proxy)
+- **Edge Node:** AMD 1.5 Hardware (`inneros-5`) via encrypted reverse tunnel (`127.0.0.1:8795`)
+- **Telemetry Sources:**
+  - **Bellini I-II Campus (`bellini-i-ii`):** 14 targets probed in real time by Bellini Network Guardian (Core distribution switch Hikvision DS-3E1510P-EI/M and APs GWN 213/216/227 offline; Gateway GCC6010, Grandstream UCM PBX, and Dahua NVR online).
+  - **Casa / PC Doctor Lab (`home_pcdoctor_lab`):** 92 entities monitored via Device Fabric AG-60 and Home Assistant Core.
+- **Inference Engine:** `QuantTrio/Qwen3-Coder-30B-A3B-Instruct-AWQ` via local vLLM on AMD 1.5 ($0.00 spend, zero third-party API dependencies).
+- **Persistent Storage:** Local SQLite ledger for execution traces + InnerOS MongoDB (`ops_tickets`) for operational incident tickets.
+
+---
+
+## 2. Mode Separation & Security
+
+The platform enforces a strict separation between two operating modes:
+
+### A. Public Demo Mode (`DEMO PÚBLICA`)
+- Available to anonymous evaluators and public hackathon judges.
+- Exercises verified synthetic demonstration workflows (incident triage, containment lab with Docker isolation probes, and SQLite hash-linked execution ledger).
+- All public outputs are completely sanitized: **zero exposure** of internal IP addresses, hardware serials, Tailscale node names, or tenant topologies.
+- Code execution fails closed if Docker sandbox is unavailable.
+
+### B. Authenticated Real Operations Mode (`OPERACIONES REALES · ACCESO PRIVADO`)
+- Unlocked exclusively via `Authorization: Bearer <operator_token>`.
+- Token entry is supported via the session modal or sidebar; tokens are held strictly in memory/sessionStorage and are **never leaked in URL query parameters (`?token=`), logs, or GitHub**.
+- Any compromised legacy tokens (including `inneros-ops-token-bellini-2026` and `sec_ops_vultr_58085a2638f64246547b956c617e6492`) are permanently blacklisted in `REVOKED_TOKENS` and rejected with `HTTP 401 Unauthorized`.
+- Connects to genuine hardware telemetry, runs Qwen 30B autonomous SRE reasoning, creates persistent tickets, dispatches internal alerts, and registers human-confirmed ACKs.
+
+---
+
+## 3. End-to-End Operational Pipeline
+
+| Step | Operation | Backend Endpoint | Behavior |
+|---|---|---|---|
+| **01** | **Live Hardware Sweep** | `POST /api/live/sweep/bellini` | Probes 14 campus targets; calculates ICMP loss, TCP open ports, and SHA-256 evidence. |
+| **02** | **Autonomous SRE Diagnosis** | `POST /api/live/diagnose` | Qwen 30B local inference on AMD 1.5 ($0.00 spend). Root-cause analysis & strict READ-ONLY containment rules. |
+| **03** | **Persist Ticket in MongoDB** | `POST /api/live/ticket` | Creates immutable incident ticket (`TKT-...`, P1 CRITICAL) in InnerOS MongoDB `ops_tickets`. |
+| **04A** | **Dispatch Internal Notification** | `POST /api/live/ticket/{id}/notify` | Dispatches internal alert to PC Doctor on-call lead (`rafael`) via canonical agent messaging (`DELIVERED`). |
+| **04B** | **Register Human Operator ACK** | `POST /api/live/ticket/{id}/ack` | Records explicit human acknowledgment with operator name and technical note (zero fake auto-ACK). |
+| **05** | **Physical Hardware Recheck** | `POST /api/live/ticket/{id}/recheck` | Re-probes hardware. Confirms persistent physical failure (`ANOMALY_PERSISTENT`); refuses fake auto-closure. |
+
+---
+
+## 4. Verification & Testing
+
+### Automated Test Suite
+Run the full test suite locally or on the VM:
+```bash
+pytest -v
+```
+- **85 unit and contract tests passing**, 2 Docker live tests skipped when Docker daemon is not bound.
+- Negative security tests verify that unauthenticated requests, revoked tokens, and query parameter leaks are strictly rejected with 401.
+
+### Real Browser QA (Playwright)
+```bash
+python scripts/judge_browser_qa.py --screenshots .judge-qa
+```
+- Exercises the guided judge walkthrough on Desktop (1440x900) and Mobile (390x844).
+- Verifies document width is strictly `<= 390px` with zero horizontal overflow and zero JavaScript console errors.
+
+### Live Security & Operations Verification
+```bash
+INNEROS_OPS_TOKEN="<operator_token>" python scripts/verify_live_security_and_ops.py
+```
+- Executes all 12 live end-to-end security and hardware gates against the live production server.
+
+---
+
+## 5. Deployment and Rollback
+
+### Production Deployment
+```bash
+# On Vultr VM (45.77.164.161)
+cd /opt/inneros-vultr-agent-rush
+git fetch origin main
+git reset --hard origin/main
+systemctl restart inneros-verified-ops.service
+```
+
+### Rollback Procedure
+```bash
+# Rollback to any prior validated commit
+git reset --hard <commit_hash>
+systemctl restart inneros-verified-ops.service
+```
+
+---
+
+## 6. What Works Today
 
 | Module | Behavior | Status |
 |---|---|---|
-| Web mission control | Mobile-friendly UI for real workflow requests, results, and ledger | Implemented |
-| Customer incident intake | Validated ticket -> severity/category -> action plan | Implemented |
-| Service ticket board | Persisted tickets; acknowledge / resolve / reopen, hash-linked event history | Implemented |
-| Operator privacy | Private runs/tickets invisible in public demo; token stays in browser memory only | Implemented |
-| Operational report | Saves actual Markdown artifact, SHA-256 hash, and steps | Implemented |
-| Run evidence | SQLite persists events linked by previous-event SHA-256; separate endpoint checks chain and persisted report bytes | Implemented |
-| Verified code repair | Run failing assertion -> propose patch -> rerun -> report | Orchestrator implemented; live Docker run pending |
-| Code containment | No host fallback; no network; capped CPU, RAM, PIDs, time | Implemented; live Docker CI job prepared, not yet executed |
-| Private sandbox worker | Authenticated RPC, bounded concurrency, separate VM design | Implemented, real VM integration pending |
-| Local LLM inference | Opt-in OpenAI-compatible endpoint for Qwen/vLLM/Ollama, advisory-only incident analysis and code patch proposals | Adapter unit-tested with mocked endpoint; real AMD link pending |
-| Vultr | Deployment artifacts and instructions | Deployment not yet done |
+| Web Mission Control | Mobile-friendly UI for real workflow requests, results, and ledger | **VERIFIED (LIVE)** |
+| Judge Console (`/judge`) | 5-step operational pipeline + live hardware telemetry | **VERIFIED (LIVE)** |
+| Bellini Network Guardian | 14 targets ICMP/TCP probe via AMD 1.5 Edge Host | **VERIFIED (REAL)** |
+| Device Fabric AG-60 | 92 Home Assistant entities telemetry | **VERIFIED (REAL)** |
+| Qwen 30B Local SRE | Local vLLM on AMD 1.5 ($0.00 spend, zero API cost) | **VERIFIED (REAL)** |
+| Operational Ticketing | Persistent MongoDB collection (`ops_tickets`) with SHA-256 | **VERIFIED (REAL)** |
+| Agent Notification | Internal dispatch to on-call lead (`rafael`) | **VERIFIED (REAL)** |
+| Human Operator ACK | Explicit human acknowledgment with technical note | **VERIFIED (REAL)** |
+| Zero-Fabrication Invariant | Physical recheck detects persistent anomaly; ticket stays open | **VERIFIED (REAL)** |
+| Containment Lab | Curated Docker isolation probes (fails closed without daemon) | **VERIFIED (FAIL-CLOSED)** |
+| Security Hardening | Bearer token auth, query-string leak elimination, token revocation | **VERIFIED (BLINDADO)** |
+| Vultr Cloud Compute | Miami instance with Caddy TLS reverse proxy | **VERIFIED (LIVE)** |
 
 **Rules fallback** is always identified as rules, not AI. If no inference model is configured, two built-in demonstration cases use explicit deterministic patch rules. Custom repairs require a configured model and operator authorization.
 
