@@ -339,6 +339,7 @@ if (btnUnlock && tokenModal) {
 if (btnLock) {
   btnLock.addEventListener("click", () => {
     setOperatorSession("");
+    updateAuthUI(false);
     toast("Sesión de operador cerrada.");
     refresh();
   });
