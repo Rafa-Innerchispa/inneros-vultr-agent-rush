@@ -14,6 +14,7 @@ Tests the deployed Vultr instance (https://45.77.164.161.sslip.io) against:
 11. Authenticated private topology retrieval
 """
 import json
+import os
 import urllib.request
 import urllib.error
 import ssl
