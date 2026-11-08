@@ -3,6 +3,7 @@ Provides REST API and high-polish Judge Console for Vultr Agent Rush 2026.
 """
 from __future__ import annotations
 
+import hmac
 import json
 import mimetypes
 import os
@@ -127,7 +128,8 @@ class VerifiedOpsHandler(BaseHTTPRequestHandler):
             scheme, _, token_candidate = auth_header.partition(" ")
             token_candidate = token_candidate.strip()
             is_op = (
-                token_candidate not in REVOKED_TOKENS
+                bool(token_candidate)
+                and token_candidate not in REVOKED_TOKENS
                 and bool(bridge_client.INNEROS_OPS_TOKEN)
                 and hmac.compare_digest(token_candidate, bridge_client.INNEROS_OPS_TOKEN)
             )
