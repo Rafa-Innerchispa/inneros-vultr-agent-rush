@@ -186,10 +186,6 @@ function judgeMessage(id, message, state) {
 let liveTelemetry = null;
 let liveDiagnosis = null;
 let liveTicketData = null;
-
-let liveTelemetry = null;
-let liveDiagnosis = null;
-let liveTicketData = null;
 let isBridgeConnected = false;
 
 const judgeView = window.location.pathname.replace(/\/$/, "") === "/judge";
