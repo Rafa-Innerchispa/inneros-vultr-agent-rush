@@ -447,10 +447,10 @@ if (judgeView) {
         const sha = (res.evidence_sha256 || "").slice(0, 16);
         if (site === "bellini") {
           judgeMessage("judge-step-one", "PASS · Sondeo Campus: " + res.online_count + "/" + res.total_targets + " online · Switch & APs OFFLINE · SHA: " + sha + "…", "pass");
-          $("judge-proof").textContent = "Evidencia SHA-256 Verificada: " + res.evidence_sha256 + " | Sensor: Network Guardian en AMD 1.5 | Tailscale: ACTIVE";
+          $("judge-proof").textContent = "Verified SHA-256 (Evidencia): " + res.evidence_sha256 + " | Sensor: Network Guardian en AMD 1.5 | Tailscale: ACTIVE";
         } else {
           judgeMessage("judge-step-one", "PASS · Inventario Edge Lab: " + res.total_entities + " entidades · " + res.stale_count + " APs STALE · SHA: " + sha + "…", "pass");
-          $("judge-proof").textContent = "Evidencia SHA-256 Verificada: " + res.evidence_sha256 + " | Sensor: Edge Device Fabric en AMD 1.5";
+          $("judge-proof").textContent = "Verified SHA-256 (Evidencia): " + res.evidence_sha256 + " | Sensor: Edge Device Fabric en AMD 1.5";
         }
 
         // Show telemetry detail box
@@ -483,7 +483,7 @@ if (judgeView) {
         const classified = run.events.find(e => e.step === "classify")?.details?.priority || "P1";
         const sha = (run.events.at(-1)?.hash || "").slice(0, 16);
         judgeMessage("judge-step-one", "PASS · " + classified + " CRÍTICO · Ticket " + judgeTicketId.slice(0, 12) + " · SHA: " + sha + "…", "pass");
-        $("judge-proof").textContent = "Evidencia SHA-256 Verificada: " + (run.events.at(-1)?.hash || "valid") + " | Run ID: " + judgeRunId + " | Ticket: " + judgeTicketId;
+        $("judge-proof").textContent = "Verified SHA-256 (Evidencia): " + (run.events.at(-1)?.hash || "valid") + " | Run ID: " + judgeRunId + " | Ticket: " + judgeTicketId;
 
         // Show telemetry detail box for public demo
         const detailBox = $("judge-telemetry-detail");
@@ -535,7 +535,7 @@ if (judgeView) {
 
         const modelShort = (diagRes.model || "Qwen3-Coder-30B").split("/").pop();
         judgeMessage("judge-step-two", "PASS · Qwen-30B (AMD 1.5) · Modelo: " + modelShort + " · Gasto: $0.00", "pass");
-        $("judge-proof").textContent = "Evidencia SHA-256: " + liveTelemetry.evidence_sha256 + " | Diagnóstico Determinista Verificado | Inferencia local sin costes de API.";
+        $("judge-proof").textContent = "Verified SHA-256 (Evidencia): " + liveTelemetry.evidence_sha256 + " | Diagnóstico Determinista Verificado | Inferencia local sin costes de API.";
 
         const detailBox = $("judge-telemetry-detail");
         if (detailBox) {
@@ -551,7 +551,7 @@ if (judgeView) {
         if (!v.verified || !t.evidence_chain_valid || t.run_id !== judgeRunId || !v.final_evidence_hash)
           throw new Error("Record or ticket integrity failed");
         judgeMessage("judge-step-two", "PASS · Diagnóstico SRE Verificado · " + v.event_count + " eventos en cadena hash", "pass");
-        $("judge-proof").textContent = "Evidencia SHA-256: " + v.final_evidence_hash + " | Integridad de cadena criptográfica validada. Remediación física: PENDIENTE.";
+        $("judge-proof").textContent = "Verified SHA-256: " + v.final_evidence_hash + " | Integridad de cadena criptográfica validada. Remediación física: PENDIENTE.";
         const detailBox = $("judge-telemetry-detail");
         if (detailBox) {
           detailBox.classList.add("visible");
