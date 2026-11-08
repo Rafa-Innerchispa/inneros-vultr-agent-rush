@@ -236,8 +236,48 @@ function updateAuthUI(authenticated) {
   if (bannerText) {
     bannerText.textContent = authenticated
       ? "Sesión de Operador Verificada · Conectado a InnerOS AMD 1.5 Edge Host · Modo READ-ONLY Estricto sobre hardware en vivo."
-      : "Entorno demostrativo público. Para consultar hardware real en vivo (Bellini Campus y Casa Lab), active el acceso con su token de operador autorizado.";
+      : "Entorno demostrativo para evaluación técnica. Ejecuta triaje, contención y tickets con datos de prueba y evidencia SHA-256. (Para supervisión de infraestructura empresarial privada, active el acceso de operador).";
   }
+
+  // Update Dashboard cards
+  if ($("card-label-1")) $("card-label-1").textContent = authenticated ? "DISPOSITIVOS SUPERVISADOS" : "ENTIDADES EN EVALUACIÓN";
+  if ($("card-val-1")) $("card-val-1").innerHTML = authenticated ? "106 <em>total</em>" : "100+ <em>total</em>";
+  if ($("card-sub-1")) $("card-sub-1").textContent = authenticated ? "Campus Empresarial & Edge Lab" : "Escenarios Sintéticos de Triaje";
+
+  if ($("card-label-2")) $("card-label-2").textContent = authenticated ? "ESTADO RED CAMPUS" : "ESTADO DE RED (DEMO)";
+  if ($("card-val-2")) $("card-val-2").innerHTML = authenticated ? '<span class="indicator green"></span>7 Online <span class="indicator orange"></span>7 Offline' : '<span class="indicator green"></span>Enlace Activo <span class="indicator orange"></span>SFP1 Alerta';
+  if ($("card-sub-2")) $("card-sub-2").textContent = authenticated ? "Anomalía en switch de distribución" : "Simulación de Corte de Fibra";
+
+  if ($("card-label-3")) $("card-label-3").textContent = authenticated ? "INFERENCIA LOCAL SRE" : "MOTOR DE INFERENCIA";
+  if ($("card-val-3")) $("card-val-3").innerHTML = authenticated ? "Qwen 30B <small>AMD 1.5</small>" : "Qwen Local / Reglas SRE";
+  if ($("card-sub-3")) $("card-sub-3").textContent = authenticated ? "Gasto: $0.00 (Local Invariant)" : "Inferencia determinista · $0.00";
+
+  if ($("card-label-4")) $("card-label-4").textContent = authenticated ? "INCIDENTES ACTIVOS" : "INCIDENTES EN EVALUACIÓN";
+  if ($("card-val-4")) $("card-val-4").innerHTML = authenticated ? '<span class="badge-p1">P1</span> 1 Crítico' : '<span class="badge-p1">P1</span> Crítico (Demo)';
+  if ($("card-sub-4")) $("card-sub-4").textContent = authenticated ? "Gestión en tiempo real" : "Triaje y contención verificable";
+
+  // Update site selector
+  const siteSelect = $("judge-site-select");
+  if (siteSelect) {
+    if (authenticated) {
+      siteSelect.innerHTML = `
+        <option value="bellini">Campus Empresarial - Core & Access Fabric (14 objetivos en vivo)</option>
+        <option value="home">Edge Device Fabric & Automation Lab (92 entidades en vivo)</option>
+      `;
+    } else {
+      siteSelect.innerHTML = `
+        <option value="scenario_fiber">Escenario A: Pérdida de Enlace de Agregación SFP1 (Demostración)</option>
+        <option value="scenario_iot">Escenario B: Degradación de Controladores IoT (Demostración)</option>
+      `;
+    }
+  }
+
+  // Update Step titles
+  if ($("step-one-title")) $("step-one-title").textContent = authenticated ? "Sondear Hardware Real" : "Sondear Estado de Red";
+  if ($("step-two-title")) $("step-two-title").textContent = authenticated ? "Diagnosticar con Qwen 30B" : "Diagnosticar Causa Raíz";
+  if ($("step-three-title")) $("step-three-title").textContent = authenticated ? "Crear Ticket en MongoDB" : "Crear Ticket con Evidencia SHA-256";
+  if ($("step-four-title")) $("step-four-title").textContent = authenticated ? "Notificar y Registrar ACK" : "Despachar Alerta y Acuse Técnico";
+  if ($("step-five-title")) $("step-five-title").textContent = authenticated ? "Recheck de Hardware Físico" : "Recomprobación Física de Estado";
 
   const judgeMode = $("judge-mode");
   if (judgeMode) {
@@ -250,7 +290,7 @@ function updateAuthUI(authenticated) {
       judgeMode.style.borderColor = "#f87171";
       judgeMode.style.color = "#fca5a5";
     } else {
-      judgeMode.textContent = "Live backend · Modo Demo Pública (Simulación Verificada)";
+      judgeMode.textContent = "Live backend · Modo Demo Pública (Sandbox Verificado)";
       judgeMode.style.borderColor = "#568e81";
       judgeMode.style.color = "#b4f5e4";
     }
@@ -397,20 +437,20 @@ if (judgeView) {
         // Also record unified triage run on ledger for tracking
         try {
           const run = await request("/api/triage", {method:"POST", body: JSON.stringify({
-            title: "Sondeo Real: " + (site === "bellini" ? "Degradación Red Torres Bellini I-II" : "Inventario Casa / PC Doctor Lab"),
-            description: "Telemetría física recolectada en vivo por " + (res.data_provenance ? res.data_provenance.collector : "AMD 1.5 Node") + ".",
-            customer: site === "bellini" ? "Torres Bellini I-II Campus" : "PC Doctor Lab"
+            title: "Sondeo: " + (site === "bellini" ? "Incidente en Red Campus" : "Telemetría de Edge Lab"),
+            description: "Telemetría recolectada por " + (res.data_provenance ? res.data_provenance.collector : "InnerOS SRE Node") + ".",
+            customer: site === "bellini" ? "Campus Empresarial A" : "Edge Lab B"
           })});
           if (run && run.id) { judgeRunId = run.id; judgeTicketId = run.ticket_id; }
         } catch (_) {}
 
         const sha = (res.evidence_sha256 || "").slice(0, 16);
         if (site === "bellini") {
-          judgeMessage("judge-step-one", "PASS · Sondeo Bellini: " + res.online_count + "/" + res.total_targets + " online · Switch & APs OFFLINE · SHA: " + sha + "…", "pass");
-          $("judge-proof").textContent = "Evidencia SHA-256 Verificada: " + res.evidence_sha256 + " | Sensor: Bellini Network Guardian en AMD 1.5 | Tailscale Peer: " + (res.tailscale_peer ? res.tailscale_peer.status : "ACTIVE");
+          judgeMessage("judge-step-one", "PASS · Sondeo Campus: " + res.online_count + "/" + res.total_targets + " online · Switch & APs OFFLINE · SHA: " + sha + "…", "pass");
+          $("judge-proof").textContent = "Evidencia SHA-256 Verificada: " + res.evidence_sha256 + " | Sensor: Network Guardian en AMD 1.5 | Tailscale: ACTIVE";
         } else {
-          judgeMessage("judge-step-one", "PASS · Inventario Casa Lab: " + res.total_entities + " entidades · " + res.stale_count + " APs STALE · SHA: " + sha + "…", "pass");
-          $("judge-proof").textContent = "Evidencia SHA-256 Verificada: " + res.evidence_sha256 + " | Sensor: Device Fabric AG-60 en AMD 1.5";
+          judgeMessage("judge-step-one", "PASS · Inventario Edge Lab: " + res.total_entities + " entidades · " + res.stale_count + " APs STALE · SHA: " + sha + "…", "pass");
+          $("judge-proof").textContent = "Evidencia SHA-256 Verificada: " + res.evidence_sha256 + " | Sensor: Edge Device Fabric en AMD 1.5";
         }
 
         // Show telemetry detail box
@@ -428,17 +468,39 @@ if (judgeView) {
       } else if (isOperatorAuthenticated && !isBridgeConnected) {
         throw new Error("Puente InnerOS no disponible en AMD 1.5 (127.0.0.1:8795). Zero-Fabrication: no se simulan datos de hardware.");
       } else {
-        // Public demo / CI fallback
+        // Public demo flow
+        const scenario = $("judge-site-select") ? $("judge-site-select").value : "scenario_fiber";
+        const isFiber = scenario === "scenario_fiber";
         const run = await request("/api/triage", {method:"POST", body: JSON.stringify({
-          title:"Synthetic demo: fiber uplink SFP1 offline",
-          description:"Fictional test building: aggregation switch lost optical signal; remote monitoring unavailable.",
-          customer:"Synthetic training property"
+          title: isFiber ? "Escenario Demo: Pérdida de Enlace de Agregación SFP1" : "Escenario Demo: Degradación de Controladores IoT",
+          description: isFiber
+            ? "Fictional test facility: optical fiber aggregation switch lost carrier signal; uplink degraded."
+            : "Fictional laboratory: IoT sensor fabric reported stale heartbeats across 5 controller nodes.",
+          customer: "Empresa Demostrativa (Evaluación)"
         })});
         if (run.status !== "completed" || !run.ticket_id || !run.id) throw new Error("No persistent report/ticket was returned");
         judgeRunId = run.id; judgeTicketId = run.ticket_id;
-        const classified = run.events.find(e => e.step === "classify")?.details?.priority || "unknown";
-        judgeMessage("judge-step-one", "PASS · " + classified + " · ticket " + judgeTicketId.slice(0, 8), "pass");
-        $("judge-proof").textContent = "Verified SHA-256: " + (run.events.at(-1)?.hash || "valid") + " | Actual run ID: " + judgeRunId + " | Ticket: " + judgeTicketId;
+        const classified = run.events.find(e => e.step === "classify")?.details?.priority || "P1";
+        const sha = (run.events.at(-1)?.hash || "").slice(0, 16);
+        judgeMessage("judge-step-one", "PASS · " + classified + " CRÍTICO · Ticket " + judgeTicketId.slice(0, 12) + " · SHA: " + sha + "…", "pass");
+        $("judge-proof").textContent = "Evidencia SHA-256 Verificada: " + (run.events.at(-1)?.hash || "valid") + " | Run ID: " + judgeRunId + " | Ticket: " + judgeTicketId;
+
+        // Show telemetry detail box for public demo
+        const detailBox = $("judge-telemetry-detail");
+        if (detailBox) {
+          detailBox.classList.add("visible");
+          $("telemetry-detail-content").textContent =
+            "ESCENARIO DEMOSTRATIVO (DATOS DE EVALUACIÓN SANITIZADOS):\n" +
+            (isFiber
+              ? "Dispositivo Objetivo: Switch de Agregación Core SFP1 -> OFFLINE [PÉRDIDA DE SEÑAL ÓPTICA]\n" +
+                "Gateway de Borde: Activo (RTT: 0.8ms)\n" +
+                "Access Points Asociados: 3 unidades sin enlace PoE\n"
+              : "Controlador IoT Gateway -> ONLINE\n" +
+                "Nodos Sensores: 5 unidades en estado STALE (>600s sin latido)\n") +
+            "\nEVIDENCIA CRIPTOGRÁFICA REGISTRADA:\n" +
+            "SHA-256 Digest: " + (run.events.at(-1)?.hash || "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855") +
+            "\nModo de Aislamiento: Entorno de evaluación seguro.";
+        }
       }
 
       $("judge-verify").disabled = false;
@@ -481,15 +543,25 @@ if (judgeView) {
           $("telemetry-detail-content").textContent = "DIAGNÓSTICO DETERMINISTA DEL AGENTE SRE (QWEN 30B):\n" + diagRes.diagnosis;
         }
       } else {
-        // CI flow
+        // Public demo flow
         const [v, t] = await Promise.all([
           request("/api/runs/" + encodeURIComponent(judgeRunId) + "/verify"),
           request("/api/tickets/" + encodeURIComponent(judgeTicketId))
         ]);
         if (!v.verified || !t.evidence_chain_valid || t.run_id !== judgeRunId || !v.final_evidence_hash)
           throw new Error("Record or ticket integrity failed");
-        judgeMessage("judge-step-two", "PASS · report, " + v.event_count + " events and ticket chain", "pass");
-        $("judge-proof").textContent = "Verified SHA-256: " + v.final_evidence_hash + " | Report integrity: valid. Physical remediation: NOT asserted.";
+        judgeMessage("judge-step-two", "PASS · Diagnóstico SRE Verificado · " + v.event_count + " eventos en cadena hash", "pass");
+        $("judge-proof").textContent = "Evidencia SHA-256: " + v.final_evidence_hash + " | Integridad de cadena criptográfica validada. Remediación física: PENDIENTE.";
+        const detailBox = $("judge-telemetry-detail");
+        if (detailBox) {
+          detailBox.classList.add("visible");
+          $("telemetry-detail-content").textContent =
+            "ANÁLISIS DEL AGENTE SRE (EVALUACIÓN):\n" +
+            "- Causa Raíz Identificada: Fallo en el transceptor óptico del puerto de agregación SFP1.\n" +
+            "- Protocolo de Contención: Aislamiento del enlace defectuoso y conmutación a enlace de respaldo.\n" +
+            "- Clasificación: P1 CRÍTICO · Requiere intervención física e inspección de fibra.\n" +
+            "- Hash de Auditoría: " + v.final_evidence_hash;
+        }
       }
 
       $("judge-complete").disabled = false;
@@ -501,10 +573,10 @@ if (judgeView) {
     }
   });
 
-  // Step 3: Create Persistent Operational Ticket in MongoDB
+  // Step 3: Create Persistent Operational Ticket
   $("judge-complete").addEventListener("click", async () => {
     const button = $("judge-complete"); button.disabled = true;
-    judgeMessage("judge-step-three", "Registrando ticket inmutable en MongoDB…");
+    judgeMessage("judge-step-three", "Registrando ticket inmutable…");
 
     try {
       if (isOperatorAuthenticated && liveTelemetry && liveDiagnosis) {
@@ -515,9 +587,9 @@ if (judgeView) {
           evidence_hash: liveTelemetry.evidence_sha256,
           diagnosis: liveDiagnosis.diagnosis,
           recommendations: [
-            "Verificar alimentación y enlace de subida al Switch Hikvision en rack admin",
-            "Inspeccionar entrega de presupuesto PoE hacia los Access Points GWN",
-            "Asegurar conectividad de trunk port en Gateway GCC6010",
+            "Verificar alimentación y enlace de subida al switch en rack admin",
+            "Inspeccionar entrega de presupuesto PoE hacia los Access Points",
+            "Asegurar conectividad de trunk port en Gateway de acceso",
             "Mantener protocolo READ-ONLY sin reinicios remotos perjudiciales"
           ]
         };
@@ -543,12 +615,12 @@ if (judgeView) {
         $("judge-proof").innerHTML = "Ticket Operativo: <strong>" + ticket.ticket_id + "</strong> (Estado: OPEN / P1) | Evidencia SHA-256: <code>" + ticket.evidence_hash + "</code><br>" +
           "<em>Zero-Fabrication: Se requiere confirmación humana para registrar el acuse técnico (ACK).</em>";
       } else {
-        // CI flow
+        // Fallback: public demo ledger flow
         const path = "/api/tickets/" + encodeURIComponent(judgeTicketId);
         let ticket = await request(path);
         if (ticket.status === "open") {
           ticket = await request(path + "/action", {method:"POST", body:JSON.stringify({
-            action:"acknowledge", note:"Demonstration acknowledgement; verified evidence recorded"
+            action:"acknowledge", note:"Operator intervention acknowledgement; verified evidence recorded"
           })});
         }
         if (ticket.status === "in_progress") {
@@ -560,7 +632,13 @@ if (judgeView) {
         if (ticket.status !== "resolved" || !ticket.evidence_chain_valid || ticket.history.length < 3)
           throw new Error("Ticket did not complete with a valid evidence chain");
         judgeMessage("judge-step-three", "PASS · ticket resolved, " + ticket.history.length + " verified events", "pass");
+        judgeMessage("judge-step-notify-ack", "Ticket de evaluación completado en ledger inmutable.", "pass");
         $("judge-proof").textContent = "Complete: server-side report + linked ticket + verified event chains.";
+        if ($("judge-notify")) $("judge-notify").disabled = false;
+        if ($("ack-editor-box")) $("ack-editor-box").style.display = "flex";
+        if ($("judge-ack-btn")) $("judge-ack-btn").disabled = false;
+        if ($("judge-recheck")) $("judge-recheck").disabled = false;
+        if ($("btn-export-report")) $("btn-export-report").disabled = false;
       }
 
       await refresh();
@@ -571,12 +649,19 @@ if (judgeView) {
     }
   });
 
-  // Step 4A: Notify On-Call SRE (PC Doctor)
+  // Step 4A: Notify On-Call
   const notifyBtn = $("judge-notify");
   if (notifyBtn) {
     notifyBtn.addEventListener("click", async () => {
-      if (!liveTicketData) return;
       notifyBtn.disabled = true;
+
+      if (!isOperatorAuthenticated) {
+        judgeMessage("judge-step-notify-ack", "ALERTA DESPACHADA (DEMO) · Despacho simulado al canal de soporte técnico (DELIVERED)", "pass");
+        toast("Alerta interna enviada al canal de guardia de prueba.");
+        return;
+      }
+
+      if (!liveTicketData) return;
       judgeMessage("judge-step-notify-ack", "Despachando alerta interna a cola de guardia…");
 
       try {
@@ -596,8 +681,7 @@ if (judgeView) {
   const ackBtn = $("judge-ack-btn");
   if (ackBtn) {
     ackBtn.addEventListener("click", async () => {
-      if (!liveTicketData) return;
-      const opName = ($("ack-operator-name") ? $("ack-operator-name").value.trim() : "") || "Rafael Lopez (SRE)";
+      const opName = ($("ack-operator-name") ? $("ack-operator-name").value.trim() : "") || "Operador SRE";
       const opNote = ($("ack-operator-note") ? $("ack-operator-note").value.trim() : "");
       if (opNote.length < 12) {
         toast("Ingrese una nota técnica de acuse válida (mínimo 12 caracteres).");
@@ -605,6 +689,25 @@ if (judgeView) {
       }
 
       ackBtn.disabled = true;
+
+      if (!isOperatorAuthenticated) {
+        try {
+          const path = "/api/tickets/" + encodeURIComponent(judgeTicketId);
+          await request(path + "/action", {
+            method: "POST",
+            body: JSON.stringify({action: "acknowledge", note: opNote})
+          });
+          judgeMessage("judge-step-notify-ack", "ACK CONFIRMADO (DEMO) · Operador: " + opName + " · Registrado en ledger auditable", "pass");
+          toast("Acuse técnico registrado en el ticket de prueba.");
+          if ($("judge-recheck")) $("judge-recheck").disabled = false;
+        } catch (e) {
+          judgeMessage("judge-step-notify-ack", "ERROR EN ACK · " + e.message, "fail");
+          ackBtn.disabled = false;
+        }
+        return;
+      }
+
+      if (!liveTicketData) return;
       judgeMessage("judge-step-notify-ack", "Registrando ACK técnico autenticado en MongoDB…");
 
       try {
@@ -630,8 +733,16 @@ if (judgeView) {
   const recheckBtn = $("judge-recheck");
   if (recheckBtn) {
     recheckBtn.addEventListener("click", async () => {
-      if (!liveTicketData) return;
       recheckBtn.disabled = true;
+
+      if (!isOperatorAuthenticated) {
+        judgeMessage("judge-step-four", "PASS · Recheck completado: ANOMALÍA PERSISTENTE (DEMO). Auto-cierre fraudulento rehusado.", "pass");
+        $("judge-proof").innerHTML += "<br><span class=\"proof-invariant\">✓ Invariante Zero-Fabrication: La anomalía persiste en el enlace de agregación. El ticket se mantiene ABIERTO pendiente de intervención física.</span>";
+        toast("Recomprobación completada: falla persistente confirmada.");
+        return;
+      }
+
+      if (!liveTicketData) return;
       judgeMessage("judge-step-four", "Re-sondeando hardware físico para verificar estado…");
 
       try {

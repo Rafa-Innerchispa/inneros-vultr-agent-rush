@@ -44,52 +44,52 @@
       <section class="judge-workthrough" id="judge-workthrough" aria-label="Live judge walkthrough" hidden>
         <!-- Mode Banner: Public Demo vs Authenticated Real Operations -->
         <div id="mode-banner" class="mode-banner public">
-          <div class="banner-badge" id="banner-badge-public">DEMO PÚBLICA</div>
+          <div class="banner-badge" id="banner-badge-public">DEMO PÚBLICA (SANDBOX)</div>
           <div class="banner-badge" id="banner-badge-private" style="display:none;"><span class="live-dot green"></span>OPERACIONES REALES · ACCESO PRIVADO</div>
-          <div class="banner-text" id="banner-text">Entorno demostrativo para evaluación. Para consultar hardware real en vivo (Bellini Campus y Casa Lab), active el acceso con su token de operador autorizado.</div>
+          <div class="banner-text" id="banner-text">Entorno demostrativo para evaluación técnica. Ejecuta triaje, contención y tickets con datos de prueba y evidencia SHA-256. (Para supervisión de infraestructura empresarial privada, active el acceso de operador).</div>
           <div class="banner-actions">
             <button type="button" id="btn-unlock-operator" class="btn-sm">Acceso Operador ↗</button>
             <button type="button" id="btn-lock-operator" class="btn-sm secondary" style="display:none;">Cerrar Sesión</button>
           </div>
         </div>
 
-        <!-- Adenda P1: Live Operational Dashboard -->
+        <!-- Adenda P1: Operational Dashboard -->
         <div class="ops-dashboard-grid" id="ops-dashboard">
           <div class="ops-card">
-            <span class="ops-card-label">DISPOSITIVOS SUPERVISADOS</span>
-            <div class="ops-card-val">106 <em>total</em></div>
-            <span class="ops-card-sub">14 Bellini · 92 Casa Lab</span>
+            <span class="ops-card-label" id="card-label-1">ENTIDADES EN EVALUACIÓN</span>
+            <div class="ops-card-val" id="card-val-1">100+ <em>total</em></div>
+            <span class="ops-card-sub" id="card-sub-1">Escenarios Sintéticos de Triaje</span>
           </div>
           <div class="ops-card">
-            <span class="ops-card-label">ESTADO RED BELLINI I-II</span>
-            <div class="ops-card-val"><span class="indicator green"></span>7 Online <span class="indicator orange"></span>7 Offline</div>
-            <span class="ops-card-sub">Switch Admin & APs caídos</span>
+            <span class="ops-card-label" id="card-label-2">ESTADO DE RED (DEMO)</span>
+            <div class="ops-card-val" id="card-val-2"><span class="indicator green"></span>Enlace Activo <span class="indicator orange"></span>SFP1 Alerta</div>
+            <span class="ops-card-sub" id="card-sub-2">Simulación de Corte de Fibra</span>
           </div>
           <div class="ops-card">
-            <span class="ops-card-label">INFERENCIA LOCAL SRE</span>
-            <div class="ops-card-val">Qwen 30B <small>AMD 1.5</small></div>
-            <span class="ops-card-sub">Gasto: $0.00 (Local Invariant)</span>
+            <span class="ops-card-label" id="card-label-3">MOTOR DE INFERENCIA</span>
+            <div class="ops-card-val" id="card-val-3">Qwen Local / Reglas SRE</div>
+            <span class="ops-card-sub" id="card-sub-3">Inferencia determinista · $0.00</span>
           </div>
           <div class="ops-card">
-            <span class="ops-card-label">INCIDENTES ACTIVOS</span>
-            <div class="ops-card-val"><span class="badge-p1">P1</span> 1 Crítico <span class="badge-p2">P2</span> 1 Lab</div>
-            <span class="ops-card-sub">Gestión en tiempo real</span>
+            <span class="ops-card-label" id="card-label-4">INCIDENTES EN EVALUACIÓN</span>
+            <div class="ops-card-val" id="card-val-4"><span class="badge-p1">P1</span> Crítico (Demo)</div>
+            <span class="ops-card-sub" id="card-sub-4">Triaje y contención verificable</span>
           </div>
         </div>
 
         <div class="judge-head">
           <div>
-            <div class="eyebrow">OPERACIONES VERIFICADAS / PRUEBA DE INFRAESTRUCTURA REAL</div>
-            <h2>Operaciones verificables sobre dispositivos reales.</h2>
-            <p>Conexión directa al nodo InnerOS AMD 1.5 mediante túnel cifrado inverso. Consulta hardware real, ejecuta inferencia local con Qwen 30B ($0.00 de gasto) y registra evidencias criptográficas SHA-256 inmutables. Cero estados fingidos ni simulaciones encubiertas.</p>
+            <div class="eyebrow">INNEROS VERIFIED OPERATIONS / PLATAFORMA DE OPERACIONES VERIFICABLES</div>
+            <h2>Operaciones de soporte de TI y telecomunicaciones con evidencia auditable.</h2>
+            <p>Transforma incidentes tecnológicos en trabajo estructurado y auditable mediante flujos verificables, aislamiento y firmas SHA-256 inmutables. En modo público puede ejecutar escenarios completos de demostración; con credenciales autorizadas accede a la telemetría e inferencia directa de infraestructura empresarial.</p>
           </div>
           <div class="judge-head-right">
             <span class="judge-mode" id="judge-mode">Verificando servidor…</span>
             <div class="judge-site-wrapper">
-              <label for="judge-site-select" class="judge-site-label">SITIO ACTIVO:</label>
+              <label for="judge-site-select" class="judge-site-label">SITIO / ESCENARIO:</label>
               <select id="judge-site-select" class="judge-site-select">
-                <option value="bellini">Torres Bellini I-II Campus (Incidente Activo: 14 objetivos)</option>
-                <option value="home">Casa / PC Doctor Lab (Inventario: 92 dispositivos)</option>
+                <option value="scenario_fiber">Escenario A: Pérdida de Enlace de Agregación SFP1 (Demostración)</option>
+                <option value="scenario_iot">Escenario B: Degradación de Controladores IoT (Demostración)</option>
               </select>
             </div>
           </div>
@@ -97,38 +97,38 @@
 
         <div class="judge-steps">
           <article class="judge-step">
-            <span class="judge-number">01 / SONDEO REAL</span>
-            <h3>Sondear Hardware Real</h3>
-            <p>Ejecuta sondeo ICMP/TCP en tiempo real en la red del campus. Identifica switch de administración y APs caídos.</p>
-            <button type="button" id="judge-start" class="judge-btn">Ejecutar sondeo real</button>
+            <span class="judge-number">01 / SONDEO</span>
+            <h3 id="step-one-title">Sondear Estado de Red</h3>
+            <p id="step-one-desc">Inicia la recolección de telemetría y detecta anomalías en los enlaces o dispositivos.</p>
+            <button type="button" id="judge-start" class="judge-btn">Iniciar sondeo de telemetría</button>
             <div class="judge-step-result" id="judge-step-one" role="status" aria-live="polite">No ejecutado aún</div>
           </article>
 
           <article class="judge-step">
-            <span class="judge-number">02 / IA LOCAL SRE</span>
-            <h3>Diagnosticar con Qwen 30B</h3>
-            <p>Inferencia local vLLM en AMD 1.5 ($0.00). Deducción determinista de causa raíz y protocolo de contención.</p>
-            <button type="button" id="judge-verify" class="judge-btn" disabled>Diagnosticar con Qwen 30B</button>
+            <span class="judge-number">02 / DIAGNÓSTICO SRE</span>
+            <h3 id="step-two-title">Diagnosticar Causa Raíz</h3>
+            <p id="step-two-desc">Analiza la telemetría mediante inferencia local determinista y formula el protocolo de contención.</p>
+            <button type="button" id="judge-verify" class="judge-btn" disabled>Ejecutar diagnóstico autónomo</button>
             <div class="judge-step-result" id="judge-step-two" role="status" aria-live="polite">Esperando paso 1</div>
           </article>
 
           <article class="judge-step">
-            <span class="judge-number">03 / TICKET EN MONGODB</span>
-            <h3>Crear Ticket Operativo</h3>
-            <p>Registra ticket formal P1 en MongoDB (ops_tickets) con ID inmutable, SHA-256 y clasificación de impacto.</p>
-            <button type="button" id="judge-complete" class="judge-btn" disabled>Crear Ticket en MongoDB</button>
+            <span class="judge-number">03 / TICKET OPERATIVO</span>
+            <h3 id="step-three-title">Crear Ticket con Evidencia SHA-256</h3>
+            <p id="step-three-desc">Registra el incidente con firma criptográfica inmutable, prioridad justificada y trazabilidad completa.</p>
+            <button type="button" id="judge-complete" class="judge-btn" disabled>Crear Ticket Operativo</button>
             <div class="judge-step-result" id="judge-step-three" role="status" aria-live="polite">Esperando diagnóstico</div>
           </article>
 
           <article class="judge-step">
             <span class="judge-number">04 / NOTIFICACIÓN & ACK</span>
-            <h3>Notificar y Registrar ACK</h3>
-            <p>Despacha alerta interna al lead de guardia (rafael) y registra acuse técnico humano (cero auto-ACK).</p>
+            <h3 id="step-four-title">Despachar Alerta y Acuse Técnico</h3>
+            <p id="step-four-desc">Comunica el incidente al equipo de guardia y registra el acuse técnico humano (cero simulación).</p>
             <div class="step-subactions">
               <button type="button" id="judge-notify" class="judge-btn secondary" disabled>Despachar alerta interna</button>
               <div id="ack-editor-box" class="ack-editor-box" style="display:none;">
-                <input id="ack-operator-name" class="ack-input" value="Rafael Lopez (SRE On-Call)" placeholder="Operador">
-                <textarea id="ack-operator-note" class="ack-textarea" rows="2" placeholder="Nota técnica de acuse (12+ caracteres)">Recepción confirmada. Switch admin Hikvision sin respuesta. Procediendo a inspección física en rack.</textarea>
+                <input id="ack-operator-name" class="ack-input" value="Operador SRE de Guardia" placeholder="Identidad del Operador">
+                <textarea id="ack-operator-note" class="ack-textarea" rows="2" placeholder="Nota técnica de acuse (12+ caracteres)">Recepción de alerta confirmada. Procediendo a diagnóstico e inspección técnica según protocolo.</textarea>
                 <button type="button" id="judge-ack-btn" class="judge-btn" style="margin-top:6px;">Registrar ACK Humano</button>
               </div>
             </div>
@@ -136,16 +136,16 @@
           </article>
 
           <article class="judge-step">
-            <span class="judge-number">05 / RECHECK FÍSICO</span>
-            <h3>Recheck de Hardware</h3>
-            <p>Vuelve a sondear equipos. Confirma persistencia física y rehúsa cierre fraudulento (Zero-Fabrication).</p>
-            <button type="button" id="judge-recheck" class="judge-btn" disabled>Recheck estado físico</button>
+            <span class="judge-number">05 / RECHECK & REPORTE</span>
+            <h3 id="step-five-title">Recomprobación Física de Estado</h3>
+            <p id="step-five-desc">Vuelve a consultar la infraestructura. Si la anomalía persiste, el ticket permanece abierto (Zero-Fabrication).</p>
+            <button type="button" id="judge-recheck" class="judge-btn" disabled>Recomprobar estado físico</button>
             <div class="judge-step-result" id="judge-step-four" role="status" aria-live="polite">Esperando ticket</div>
           </article>
         </div>
 
         <div class="judge-proof-container">
-          <div class="judge-proof" id="judge-proof" aria-live="polite">Seleccione el sitio y pulse 'Ejecutar sondeo real' para iniciar el triaje de hardware.</div>
+          <div class="judge-proof" id="judge-proof" aria-live="polite">Seleccione el escenario y pulse 'Iniciar sondeo de telemetría' para comenzar el triaje de operaciones.</div>
           <div class="judge-proof-actions">
             <button type="button" id="btn-view-topology" class="btn-proof-action" disabled>↗ Abrir Topología Privada (Gated)</button>
             <button type="button" id="btn-export-report" class="btn-proof-action" disabled>⬇ Descargar Informe Técnico</button>
@@ -154,8 +154,8 @@
 
         <div id="judge-telemetry-detail" class="judge-telemetry-detail">
           <div class="telemetry-detail-header">
-            <strong id="telemetry-detail-title" class="telemetry-detail-title">Telemetría de Hardware Real</strong>
-            <span id="telemetry-provenance" class="telemetry-provenance">Bellini Network Guardian · AMD 1.5</span>
+            <strong id="telemetry-detail-title" class="telemetry-detail-title">Detalle de Telemetría Operativa</strong>
+            <span id="telemetry-provenance" class="telemetry-provenance">InnerOS Telemetry Engine</span>
           </div>
           <pre id="telemetry-detail-content" class="telemetry-detail-content"></pre>
         </div>
@@ -269,7 +269,7 @@
       <button type="button" id="token-modal-close" class="modal-close-btn" aria-label="Cerrar">✕</button>
     </div>
     <div class="modal-body">
-      <p class="modal-desc">Ingrese el token de operador para autenticar sus consultas contra la telemetría real de Bellini Campus y Casa Lab en InnerOS AMD 1.5:</p>
+      <p class="modal-desc">Ingrese el token de operador para autenticar sus consultas contra la telemetría e infraestructura empresarial en vivo en InnerOS AMD 1.5:</p>
       <input type="password" id="modal-token-input" class="modal-input" placeholder="Bearer Token de Operador" autocomplete="off">
       <div id="modal-token-error" class="modal-error"></div>
     </div>
