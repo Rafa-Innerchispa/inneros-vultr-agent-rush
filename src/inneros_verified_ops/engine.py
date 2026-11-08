@@ -282,6 +282,26 @@ class IncidentEngine:
         self._last_evidence_hash = final_hash
         return receipt
 
+    def register_external_receipt(self, final_evidence_hash: str, meta: Dict[str, Any]) -> CryptographicReceipt:
+        with self._lock:
+            receipt_id = f"rcpt_ext_{uuid.uuid4().hex[:10]}"
+            receipt = CryptographicReceipt(
+                receipt_id=receipt_id,
+                incident_id=meta.get("incident_id", "LIVE-INNEROS-SWEEP"),
+                ticket_id=meta.get("ticket_id", "N/A"),
+                initial_digest=meta.get("initial_digest", final_evidence_hash),
+                diagnosis_digest=meta.get("diagnosis_digest", "0" * 64),
+                plan_digest=meta.get("plan_digest", "0" * 64),
+                execution_digest=meta.get("execution_digest", "0" * 64),
+                final_evidence_hash=final_evidence_hash,
+                prev_hash=self._last_evidence_hash,
+                timestamp_iso=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            )
+            self._receipts[receipt_id] = receipt
+            self._receipt_by_hash[final_evidence_hash] = receipt
+            self._last_evidence_hash = final_evidence_hash
+            return receipt
+
     def verify_hash(self, evidence_hash: str) -> Dict[str, Any]:
         with self._lock:
             receipt = self._receipt_by_hash.get(evidence_hash)
@@ -300,3 +320,4 @@ class IncidentEngine:
 
 
 ENGINE = IncidentEngine()
+

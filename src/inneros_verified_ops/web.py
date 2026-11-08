@@ -16,6 +16,7 @@ from urllib.parse import parse_qs, urlsplit
 
 from .containment import LAB
 from .engine import ENGINE, IncidentEngineError, InvalidStateTransitionError, UnauthorizedRemediationError
+from . import bridge_client
 
 STATIC_DIR = Path(__file__).resolve().parent.parent.parent / "static"
 
@@ -99,6 +100,7 @@ class VerifiedOpsHandler(BaseHTTPRequestHandler):
             return
 
         if path == "/health":
+            b_health = bridge_client.check_bridge_health()
             self._json(
                 HTTPStatus.OK,
                 {
@@ -110,8 +112,53 @@ class VerifiedOpsHandler(BaseHTTPRequestHandler):
                     "python_version": sys.version.split()[0],
                     "total_incidents": len(ENGINE.list_incidents()),
                     "cloud_provider": "Vultr (Miami / Cloud Compute)",
+                    "inneros_bridge": "ONLINE" if b_health.get("status") == "HEALTHY" else "STANDALONE",
+                    "inference_engine": b_health.get("model", "QuantTrio/Qwen3-Coder-30B-A3B-Instruct-AWQ (Local AMD 1.5)"),
+                    "fabric_sites": ["bellini-i-ii", "home_pcdoctor_lab"],
                 },
             )
+            return
+
+        if path == "/api/live/status":
+            b_health = bridge_client.check_bridge_health()
+            self._json(
+                HTTPStatus.OK,
+                {
+                    "ok": True,
+                    "bridge": b_health,
+                    "sites": {
+                        "bellini": {"site_id": "bellini-i-ii", "targets": 14, "mode": "read_only_icmp_tcp"},
+                        "home_pcdoctor_lab": {"site_id": "home_pcdoctor_lab", "devices": 92, "source": "home_assistant"},
+                    },
+                    "local_ai": {
+                        "model": "QuantTrio/Qwen3-Coder-30B-A3B-Instruct-AWQ",
+                        "status": "active_on_amd15",
+                        "cost": "$0.00 (Local Invariant)",
+                    },
+                },
+            )
+            return
+
+        if path.startswith("/api/private/ops/ticket/"):
+            auth_header = self.headers.get("Authorization", "")
+            query_token = parse_qs(parts.query).get("token", [""])[0]
+            expected = f"Bearer {bridge_client.INNEROS_OPS_TOKEN}"
+            if auth_header != expected and query_token != bridge_client.INNEROS_OPS_TOKEN:
+                self._json(
+                    HTTPStatus.UNAUTHORIZED,
+                    {
+                        "error": "Authentication required for private infrastructure topology",
+                        "hint": f"Provide Authorization: Bearer <token> or query parameter ?token=<token>",
+                    },
+                )
+                return
+
+            tkt_id = path.split("/")[5] if len(path.split("/")) > 5 else ""
+            tkt_data = bridge_client.get_ticket(tkt_id)
+            if tkt_data.get("ok"):
+                self._json(HTTPStatus.OK, tkt_data)
+            else:
+                self._json(HTTPStatus.NOT_FOUND, tkt_data)
             return
 
         if path == "/api/incidents":
@@ -207,6 +254,86 @@ class VerifiedOpsHandler(BaseHTTPRequestHandler):
                 self._json(HTTPStatus.OK, inc.to_dict())
             except (IncidentEngineError, UnauthorizedRemediationError, InvalidStateTransitionError) as exc:
                 self._json(HTTPStatus.BAD_REQUEST, {"error": str(exc)})
+            return
+
+        if path == "/api/live/sweep/bellini":
+            sweep_data = bridge_client.sweep_bellini()
+            if sweep_data.get("sanitized"):
+                evidence_hash = sweep_data["sanitized"].get("evidence_sha256")
+                if evidence_hash:
+                    ENGINE.register_external_receipt(evidence_hash, {
+                        "incident_id": "BELLINI-LIVE-SWEEP",
+                        "ticket_id": "TKT-PENDING",
+                    })
+                self._json(HTTPStatus.OK, sweep_data["sanitized"])
+            else:
+                self._json(HTTPStatus.BAD_GATEWAY, sweep_data)
+            return
+
+        if path == "/api/live/sweep/home":
+            home_data = bridge_client.sweep_home()
+            if home_data.get("sanitized"):
+                evidence_hash = home_data["sanitized"].get("evidence_sha256")
+                if evidence_hash:
+                    ENGINE.register_external_receipt(evidence_hash, {
+                        "incident_id": "HOME-PCDOCTOR-LAB-SWEEP",
+                        "ticket_id": "TKT-PENDING",
+                    })
+                self._json(HTTPStatus.OK, home_data["sanitized"])
+            else:
+                self._json(HTTPStatus.BAD_GATEWAY, home_data)
+            return
+
+        if path == "/api/live/diagnose":
+            prompt = body.get("prompt", "Analyze network telemetry from Bellini sweep.")
+            diag_res = bridge_client.diagnose_telemetry(prompt)
+            self._json(HTTPStatus.OK, diag_res)
+            return
+
+        if path == "/api/live/ticket":
+            site_id = body.get("site_id", "bellini-i-ii")
+            client_id = body.get("client_id", "bellini")
+            anomaly = body.get("anomaly", {})
+            evidence_hash = body.get("evidence_hash", "")
+            diagnosis = body.get("diagnosis", "")
+            recs = body.get("recommendations", [])
+
+            tkt_res = bridge_client.create_operational_ticket(
+                site_id=site_id,
+                client_id=client_id,
+                anomaly=anomaly,
+                evidence_hash=evidence_hash,
+                diagnosis=diagnosis,
+                recommendations=recs,
+            )
+            if tkt_res.get("ok"):
+                tkt = tkt_res["ticket"]
+                if evidence_hash:
+                    ENGINE.register_external_receipt(evidence_hash, {
+                        "incident_id": tkt.get("ticket_id"),
+                        "ticket_id": tkt.get("ticket_id"),
+                    })
+                self._json(HTTPStatus.CREATED, tkt_res)
+            else:
+                self._json(HTTPStatus.BAD_GATEWAY, tkt_res)
+            return
+
+        if path.startswith("/api/live/ticket/") and path.endswith("/notify"):
+            tkt_id = path.split("/")[4]
+            notify_res = bridge_client.notify_oncall(tkt_id)
+            self._json(HTTPStatus.OK if notify_res.get("ok") else HTTPStatus.BAD_GATEWAY, notify_res)
+            return
+
+        if path.startswith("/api/live/ticket/") and path.endswith("/ack"):
+            tkt_id = path.split("/")[4]
+            ack_res = bridge_client.acknowledge_ticket(tkt_id)
+            self._json(HTTPStatus.OK if ack_res.get("ok") else HTTPStatus.BAD_GATEWAY, ack_res)
+            return
+
+        if path.startswith("/api/live/ticket/") and path.endswith("/recheck"):
+            tkt_id = path.split("/")[4]
+            recheck_res = bridge_client.recheck_ticket(tkt_id)
+            self._json(HTTPStatus.OK if recheck_res.get("ok") else HTTPStatus.BAD_GATEWAY, recheck_res)
             return
 
         if path == "/api/containment/run":

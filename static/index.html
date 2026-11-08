@@ -26,10 +26,26 @@
           <span>IP: <strong id="host-ip">45.77.164.161</strong></span>
         </div>
         <div class="status-item">
-          <span>STATUS: <strong style="color:var(--accent-emerald);">ACTIVE</strong></span>
+          <span>FABRIC BRIDGE: <strong id="bridge-status" style="color:var(--accent-emerald);">ONLINE (AMD 1.5)</strong></span>
+        </div>
+        <div class="status-item">
+          <span>AI ENGINE: <strong id="ai-status" style="color:var(--accent-cyan);">Qwen 30B vLLM ($0.00)</strong></span>
         </div>
       </div>
     </header>
+
+    <!-- Real Infrastructure Mode & Site Selector Bar -->
+    <div class="card" style="margin-bottom:1.25rem;padding:0.85rem 1.25rem;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0.75rem;background:#0b1320;border-color:rgba(56,189,248,0.25);">
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <span style="font-weight:600;font-size:0.85rem;color:var(--accent-cyan);">ACTIVE TELEMETRY TARGET:</span>
+        <button id="btn-site-bellini" class="btn-primary" style="padding:0.4rem 0.8rem;font-size:0.8rem;">📡 Bellini I–II Campus (14 Devices)</button>
+        <button id="btn-site-home" class="btn-outline" style="padding:0.4rem 0.8rem;font-size:0.8rem;">🏠 Casa / PC Doctor Lab (92 HA Entities)</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.75rem;color:var(--text-muted);">
+        <span class="badge badge-low" style="font-size:0.7rem;">PRIVACY PRESERVED</span>
+        <span>Internal IPs & Secrets Redacted on Public Console</span>
+      </div>
+    </div>
 
     <div class="grid">
       <!-- Left Column: Governed Incident Lifecycle -->
@@ -43,16 +59,16 @@
           <div class="step-item" id="step-1">
             <span class="step-num">1</span>
             <div class="step-content">
-              <div class="step-title">Ingest Operational Incident</div>
-              <div class="step-desc">Simulate telemetry degradation signal (connection pool exhaustion, latency spike).</div>
+              <div class="step-title">Ingest Real Telemetry Sweep</div>
+              <div class="step-desc" id="step-1-desc">Probing live ICMP & TCP across 14 targets through Tailscale subnet gateway.</div>
             </div>
           </div>
 
           <div class="step-item" id="step-2">
             <span class="step-num">2</span>
             <div class="step-content">
-              <div class="step-title">Autonomous Agentic Diagnosis</div>
-              <div class="step-desc">Perform root-cause analysis across cloud logs and telemetry metrics.</div>
+              <div class="step-title">Autonomous Agentic Diagnosis (Qwen 30B)</div>
+              <div class="step-desc" id="step-2-desc">Analyze network reachability and isolate root cause with zero paid API spend.</div>
             </div>
           </div>
 
@@ -60,31 +76,31 @@
             <span class="step-num">3</span>
             <div class="step-content">
               <div class="step-title">Propose Governed Remediation Plan</div>
-              <div class="step-desc">Synthesize bounded, reversible remediation steps with safety invariants.</div>
+              <div class="step-desc" id="step-3-desc">Synthesize bounded, reversible remediation steps with safety invariants.</div>
             </div>
           </div>
 
           <div class="step-item" id="step-4">
             <span class="step-num">4</span>
             <div class="step-content">
-              <div class="step-title">Bind ITSM Incident Ticket</div>
-              <div class="step-desc">Formalize change management ticket awaiting human operator authorization.</div>
+              <div class="step-title">Create Private InnerOS Ticket</div>
+              <div class="step-desc" id="step-4-desc">Persist operational ticket in MongoDB with SHA-256 evidence receipt.</div>
             </div>
           </div>
 
           <div class="step-item" id="step-5">
             <span class="step-num">5</span>
             <div class="step-content">
-              <div class="step-title">Operator Human-in-the-Loop Approval</div>
-              <div class="step-desc">Operator validates blast radius and issues explicit cryptographic grant token.</div>
+              <div class="step-title">Operator Human-in-the-Loop ACK</div>
+              <div class="step-desc" id="step-5-desc">Dispatch internal alert to PC Doctor on-call and record operator ACK.</div>
             </div>
           </div>
 
           <div class="step-item" id="step-6">
             <span class="step-num">6</span>
             <div class="step-content">
-              <div class="step-title">Remediation Execution & Proof</div>
-              <div class="step-desc">Safely apply remediation actions and verify telemetry normalization.</div>
+              <div class="step-title">Verify Persistence (Follow-up Sweep)</div>
+              <div class="step-desc" id="step-6-desc">Execute follow-up sweep to verify if outage persists; prevent false auto-closure.</div>
             </div>
           </div>
 
@@ -92,7 +108,7 @@
             <span class="step-num">7</span>
             <div class="step-content">
               <div class="step-title">Cryptographic Notarization</div>
-              <div class="step-desc">Generate immutable SHA-256 evidence receipt chained into the platform ledger.</div>
+              <div class="step-desc" id="step-7-desc">Notarize immutable SHA-256 evidence receipt chained into the ledger.</div>
             </div>
           </div>
         </div>
@@ -100,13 +116,18 @@
         <div class="actions-bar">
           <button id="btn-next-step" class="btn-primary">▶ Next Action Step</button>
           <button id="btn-run-all" class="btn-outline">⚡ Run Full Automated Lifecycle</button>
-          <button id="btn-reset" class="btn-outline">↺ New Incident</button>
+          <button id="btn-reset" class="btn-outline">↺ New Live Sweep</button>
         </div>
 
         <div style="margin-top:1.25rem;">
-          <h3 style="font-size:0.95rem;margin-bottom:0.5rem;color:var(--text-muted);">Cryptographic Evidence Receipt</h3>
+          <h3 style="font-size:0.95rem;margin-bottom:0.5rem;color:var(--text-muted);">Cryptographic Evidence Receipt & Private Access</h3>
           <div class="hash-box" id="evidence-hash-box">
             Awaiting incident resolution to generate tamper-evident SHA-256 evidence receipt...
+          </div>
+          <div id="private-ticket-link-container" style="margin-top:0.75rem;display:none;">
+            <a id="private-ticket-link" href="#" target="_blank" class="btn-outline" style="display:inline-flex;font-size:0.8rem;text-decoration:none;border-color:var(--accent-amber);color:var(--accent-amber);">
+              🔒 Open Authenticated Private Ticket Topology (Authorized Ops Only)
+            </a>
           </div>
         </div>
       </section>
@@ -175,7 +196,7 @@
       </div>
       <div class="terminal-logs" id="terminal-logs">
         <div class="terminal-line">[SYSTEM_INIT] InnerOS Verified Operations v0.6.0 online on Vultr Cloud Compute node.</div>
-        <div class="terminal-line">[POLICY_LOADED] Strict human authorization required for destructive mutations. Fail-closed enabled.</div>
+        <div class="terminal-line">[BRIDGE_ATTACHED] Egress tunnel active: InnerOS AMD 1.5 -> Vultr Miami (127.0.0.1:8795).</div>
       </div>
     </section>
   </div>

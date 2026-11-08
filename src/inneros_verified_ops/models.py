@@ -144,3 +144,4 @@ class CryptographicReceipt:
             f"{self.receipt_id}:{self.incident_id}:{self.initial_digest}:{self.diagnosis_digest}:{self.plan_digest}:{self.execution_digest}:{self.prev_hash}"
         )
         return self.final_evidence_hash == expected
+
