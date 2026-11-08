@@ -2,7 +2,7 @@
 
 **Vultr: Agent Rush Hackathon 2026 | Challenge 2: Powering the Future of Work**
 
-> **Status (2026-11-08 · Production Deployed):** Release v0.6.0 fully deployed and verified in production on Vultr Cloud Compute (`45.77.164.161` Miami) with Let's Encrypt TLS at **https://vultr.innerchispa.us/judge** (and **https://45.77.164.161.sslip.io/judge**). Directly integrated with InnerOS Edge Host on AMD 1.5 hardware over a reverse encrypted socket (`127.0.0.1:8795`). Probes real campus hardware, executes local autonomous SRE inference with Qwen 30B ($0.00 spend), records persistent MongoDB tickets (`ops_tickets`), dispatches internal alerts via InnerOS Agent Messaging, enforces human technical ACKs (zero auto-ACK), and upholds the Zero-Fabrication invariant on physical recheck. 100% green test suite (87 unit/contract tests passing).
+> **Status (2026-11-08 · Production Deployed):** Release v0.6.2-frozen fully deployed and verified in production on Vultr Cloud Compute (`45.77.164.161` Miami) with Let's Encrypt TLS at **https://vultr.innerchispa.us/judge** (and **https://45.77.164.161.sslip.io/judge**). Directly integrated with InnerOS Edge Host on AMD 1.5 hardware over a reverse encrypted socket (`127.0.0.1:8795`). Probes real campus hardware, executes local autonomous SRE inference with Qwen 30B ($0.00 spend), records persistent MongoDB tickets (`ops_tickets`), dispatches internal alerts via InnerOS Agent Messaging, enforces human technical ACKs (zero auto-ACK), and upholds the Zero-Fabrication invariant on physical recheck. 100% green test suite (94 passing automated tests: 92 unit/contract tests + 2 isolated Docker live tests, 0 failed, 0 skipped; plus Playwright browser QA).
 
 A mission-critical enterprise operations console that turns infrastructure faults into verifiable workflows and **cryptographically tamper-evident evidence** (SHA-256) rather than conversational promises.
 
@@ -38,7 +38,7 @@ The platform enforces a strict separation between two operating modes:
 ### B. Authenticated Real Operations Mode (`OPERACIONES REALES · ACCESO PRIVADO`)
 - Unlocked exclusively via `Authorization: Bearer <operator_token>`.
 - Token entry is supported via the session modal or sidebar; tokens are held strictly in memory/sessionStorage and are **never leaked in URL query parameters (`?token=`), logs, or GitHub**.
-- Any compromised legacy tokens (including `inneros-ops-token-bellini-2026` and `sec_ops_vultr_58085a2638f64246547b956c617e6492`) are permanently blacklisted in `REVOKED_TOKENS` and rejected with `HTTP 401 Unauthorized`.
+- Any compromised legacy or unrotated tokens are permanently blacklisted in `REVOKED_TOKENS` across backend and frontend layers and strictly rejected with `HTTP 401 Unauthorized`.
 - Connects to genuine hardware telemetry, runs Qwen 30B autonomous SRE reasoning, creates persistent tickets, dispatches internal alerts, and registers human-confirmed ACKs.
 
 ---
@@ -63,7 +63,7 @@ Run the full test suite locally or on the VM:
 ```bash
 pytest -v
 ```
-- **85 unit and contract tests passing**, 2 Docker live tests skipped when Docker daemon is not bound.
+- **94 automated tests passing in GitHub Actions CI** (92 unit, contract, and negative security tests + 2 live Docker container isolation tests in `isolated-execution`), 0 failed, 0 skipped.
 - Negative security tests verify that unauthenticated requests, revoked tokens, and query parameter leaks are strictly rejected with 401.
 
 ### Real Browser QA (Playwright)
@@ -223,7 +223,7 @@ flowchart TD
     X --> P
 ```
 
-**Vultr's intended role:** hosting the public web app, central backend, database and workflow coordination. Code execution on a separate dedicated VM/runner is the recommended hardening step. The implemented worker is authenticated and can run on a second Vultr VM. The repo contains a Vultr deployment playbook at [`docs/DEPLOY_VULTR.md`](docs/DEPLOY_VULTR.md). The current local MVP is *not* represented as already running in Vultr.
+**Vultr's operational role:** Vultr Cloud Compute (`45.77.164.161` Miami) hosts the live web app, central FastAPI backend, and SQLite execution ledger behind Caddy TLS reverse proxy, connecting over an encrypted tunnel to the sovereign AMD 1.5 Edge Host for telemetry and inference.
 
 ## Demonstration narrative (2–3 minutes)
 
@@ -238,18 +238,15 @@ flowchart TD
 **Note:** Video should record actual execution, not synthetic traces. Capture the Vultr public URL only after deployment is complete.
 
 
-## Publishing and deployment readiness
+## Production Deployment & Publication Certification
 
-A completely separate local Git repository is included in the delivery bundle. This project
-**has not yet been published to GitHub or deployed to Vultr**. Do not use a made-up public
-URL for judging.
-
-- `python scripts/publish_github.py`: read-only publication plan.
-- On Windows, with an authenticated GitHub CLI session (`gh auth status`), the same script can publish with `--execute`, without pasting a token into the chat.
-- `python scripts/publish_github.py --execute` with an authenticated local GitHub CLI (`gh auth login`) or a private `GITHUB_TOKEN`: creates an empty public repository under the verified `Rafa-Innerchispa` account and pushes `main`. It requires a token in the private environment and never embeds tokens in the Git remote.
-- `python scripts/smoke_deployment.py --url https://YOUR-VULTR-DEMO`: creates one fictional incident on the actual deployment and checks API, evidence-chain and ticket persistence.
-- `.github/workflows/test.yml` contains separate unit and **real Docker isolation integration** jobs. The latter cannot be reported as passed until GitHub Actions has actually run it.
-- `docs/WORK_HANDOFF.md` contains the exact remaining steps for an agent with authorized GitHub and Vultr access.
+InnerOS Verified Operations is officially published on GitHub and running in production on Vultr Cloud Compute (Miami):
+- **GitHub Repository:** [Rafa-Innerchispa/inneros-vultr-agent-rush](https://github.com/Rafa-Innerchispa/inneros-vultr-agent-rush) (`main`, release tag `v0.6.2-frozen`)
+- **Primary Judge Console:** [`https://vultr.innerchispa.us/judge`](https://vultr.innerchispa.us/judge)
+- **Alternative Subdomain:** [`https://agentrush.innerchispa.us/judge`](https://agentrush.innerchispa.us/judge)
+- **Direct Fallback URL:** [`https://45.77.164.161.sslip.io/judge`](https://45.77.164.161.sslip.io/judge)
+- **Official Submission:** [LabLab Vultr Agent Rush 2026](https://lablab.build/submissions/cvs2mpnjnhx0kbbqgm3lmo4o)
+- **CI Status:** GitHub Actions run [42525995114](https://github.com/Rafa-Innerchispa/inneros-vultr-agent-rush/actions/runs/42525995114) — 100% green across all 4 jobs (`unit`, `isolated-execution`, `live-bridge-contract`, `judge-browser`).
 
 ## Judging / provenance
 
@@ -258,7 +255,7 @@ URL for judging.
 - Originality: a traceable enterprise operations workflow connecting incident handling to provable outputs instead of a standalone chat agent.
 - Business value: operational SLA prioritization, reproducible service plans and auditor-friendly evidence.
 - Provenance: Clean hackathon implementation, influenced by the InnerOS operational architecture. Any prior components reused from elsewhere must be declared before submission; this repository contains no copied production credentials or proprietary customer records.
-- Required artifacts still outstanding: Vultr VM deploy, public demo URL, authentic recorded video, LabLab submission and cover/presentation.
+- **Submission Milestones Delivered:** Vultr VM deployed in Miami datacenter, public HTTPS URLs active and certified, HeyGen presentation video recorded and linked, and official LabLab submission frozen.
 
 Official event: [Vultr Agent Rush at lablab.ai](https://lablab.ai/ai-hackathons/vultr-hackathon).
 
