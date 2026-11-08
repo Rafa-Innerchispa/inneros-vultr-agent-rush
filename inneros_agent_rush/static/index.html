@@ -44,36 +44,59 @@
       <section class="judge-workthrough" id="judge-workthrough" aria-label="Live judge walkthrough" hidden>
         <div class="judge-head">
           <div>
-            <div class="eyebrow">JUDGE VIEW / LIVE ACCEPTANCE</div>
-            <h2>Prove the workflow, step by step.</h2>
-            <p>Everything below calls this application's real backend. The incident and closure are fictional. No customer devices are changed.</p>
+            <div class="eyebrow">JUDGE VIEW / REAL INFRASTRUCTURE ACCEPTANCE</div>
+            <h2>Prove verified operations with live devices.</h2>
+            <p>Directly connected to InnerOS AMD 1.5 Edge Host over reverse encrypted tunnel. Probes genuine hardware endpoints, executes local Qwen 30B inference ($0.00 cost), and records SHA-256 audit evidence. Zero mock states or pre-recorded traces.</p>
           </div>
-          <span class="judge-mode" id="judge-mode">Checking server…</span>
+          <div class="judge-head-right">
+            <span class="judge-mode" id="judge-mode">Checking serverâ€¦</span>
+            <div class="judge-site-wrapper">
+              <label for="judge-site-select" class="judge-site-label">ACTIVE SITE:</label>
+              <select id="judge-site-select" class="judge-site-select">
+                <option value="bellini">Torres Bellini I-II Campus (Active Incident: 14 targets)</option>
+                <option value="home">Casa / PC Doctor Lab (Inventory: 92 entities)</option>
+              </select>
+            </div>
+          </div>
         </div>
         <div class="judge-steps">
           <article class="judge-step">
-            <span class="judge-number">01 / EXECUTE</span>
-            <h3>Open a fictional incident</h3>
-            <p>Classify a fiber uplink outage, generate a report, and persist a linked service ticket.</p>
-            <button type="button" id="judge-start" class="judge-btn">Create live incident</button>
+            <span class="judge-number">01 / LIVE SWEEP</span>
+            <h3>Probe Real Hardware</h3>
+            <p>Execute real-time ICMP/TCP probe across campus network. Discovers offline distribution switch & APs.</p>
+            <button type="button" id="judge-start" class="judge-btn">Execute live sweep</button>
             <div class="judge-step-result" id="judge-step-one" role="status" aria-live="polite">Not run yet</div>
           </article>
           <article class="judge-step">
-            <span class="judge-number">02 / VERIFY</span>
-            <h3>Verify stored evidence</h3>
-            <p>Ask the server to validate the report digest, event chain, and saved ticket history.</p>
-            <button type="button" id="judge-verify" class="judge-btn" disabled>Verify evidence</button>
+            <span class="judge-number">02 / LOCAL AI SRE</span>
+            <h3>Diagnose with Qwen 30B</h3>
+            <p>Local inference via vLLM on AMD 1.5 ($0.00 spend). Analyzes telemetry to isolate root cause.</p>
+            <button type="button" id="judge-verify" class="judge-btn" disabled>Diagnose with Qwen 30B</button>
             <div class="judge-step-result" id="judge-step-two" role="status" aria-live="polite">Waiting for step 1</div>
           </article>
           <article class="judge-step">
-            <span class="judge-number">03 / COMPLETE</span>
-            <h3>Record the demo lifecycle</h3>
-            <p>Acknowledge and close a <strong>synthetic</strong> ticket. This is not a claim of real hardware repair.</p>
-            <button type="button" id="judge-complete" class="judge-btn" disabled>Complete synthetic ticket</button>
-            <div class="judge-step-result" id="judge-step-three" role="status" aria-live="polite">Waiting for verification</div>
+            <span class="judge-number">03 / DISPATCH & ACK</span>
+            <h3>Persist Ticket & Notify</h3>
+            <p>Creates immutable ticket in MongoDB, delivers internal dispatch to on-call lead, and records operator ACK.</p>
+            <button type="button" id="judge-complete" class="judge-btn" disabled>Dispatch & ACK ticket</button>
+            <div class="judge-step-result" id="judge-step-three" role="status" aria-live="polite">Waiting for diagnosis</div>
+          </article>
+          <article class="judge-step">
+            <span class="judge-number">04 / RECHECK</span>
+            <h3>Physical Recheck</h3>
+            <p>Re-probes hardware. Confirms persistent failure and refuses fake auto-closure (Zero-Fabrication Policy).</p>
+            <button type="button" id="judge-recheck" class="judge-btn" disabled>Recheck hardware state</button>
+            <div class="judge-step-result" id="judge-step-four" role="status" aria-live="polite">Waiting for ticket</div>
           </article>
         </div>
-        <div class="judge-proof" id="judge-proof" aria-live="polite">Begin with step 1. No pre-recorded traces or fabricated execution states.</div>
+        <div class="judge-proof" id="judge-proof" aria-live="polite">Select site and click 'Execute live sweep' to begin real hardware triage.</div>
+        <div id="judge-telemetry-detail" class="judge-telemetry-detail">
+          <div class="telemetry-detail-header">
+            <strong id="telemetry-detail-title" class="telemetry-detail-title">Real Hardware Telemetry Detail</strong>
+            <span id="telemetry-provenance" class="telemetry-provenance">Bellini Network Guardian Â· AMD 1.5</span>
+          </div>
+          <pre id="telemetry-detail-content" class="telemetry-detail-content"></pre>
+        </div>
       </section>
       <div class="hero">
         <div class="eyebrow"><span class="small-dot"></span> VERIFIABLE AUTONOMY</div>

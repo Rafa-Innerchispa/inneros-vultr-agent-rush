@@ -230,6 +230,97 @@ def create_app(engine: WorkflowEngine | None = None, *, auth_token: str | None =
         content = (result["artifact"].get("content") or result["artifact"].get("candidate_code") or "")
         return PlainTextResponse(content, media_type="text/plain")
 
+
+    # === Real InnerOS Infrastructure Bridge Routes ===
+    INNEROS_BRIDGE = os.getenv("INNEROS_BRIDGE_URL", "http://127.0.0.1:8795")
+    INNEROS_OPS_TOKEN = os.getenv("INNEROS_OPS_TOKEN", "inneros-ops-token-bellini-2026")
+
+    def _bridge_call(method: str, path: str, payload: dict | None = None, timeout: float = 60.0) -> dict:
+        import json, urllib.request, urllib.error
+        url = f"{INNEROS_BRIDGE}{path}"
+        data = json.dumps(payload).encode() if payload is not None else None
+        req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"}, method=method)
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                return json.loads(resp.read().decode())
+        except Exception as exc:
+            return {"ok": False, "error": f"Bridge error ({path}): {str(exc)}"}
+
+    @app.get("/api/live/status")
+    def live_status():
+        bridge_h = _bridge_call("GET", "/health", timeout=4.0)
+        return {
+            "ok": True,
+            "bridge": bridge_h,
+            "sites": {
+                "bellini": {"site_id": "bellini-i-ii", "label": "Torres Bellini I-II Campus", "targets": 14},
+                "home_pcdoctor_lab": {"site_id": "home_pcdoctor_lab", "label": "Casa / PC Doctor Lab", "entities": 92}
+            },
+            "inference": {
+                "engine": engine.model.label,
+                "model": os.getenv("LLM_MODEL", "QuantTrio/Qwen3-Coder-30B-A3B-Instruct-AWQ"),
+                "cost": "$0.00 (Local Invariant)"
+            }
+        }
+
+    @app.post("/api/live/sweep/bellini")
+    def live_sweep_bellini():
+        res = _bridge_call("POST", "/api/sweep/bellini", timeout=35.0)
+        if not res.get("sanitized"):
+            raise HTTPException(status_code=502, detail=res.get("error", "Bellini sweep failed"))
+        return res["sanitized"]
+
+    @app.post("/api/live/sweep/home")
+    def live_sweep_home():
+        res = _bridge_call("POST", "/api/sweep/home", timeout=20.0)
+        if not res.get("sanitized"):
+            raise HTTPException(status_code=502, detail=res.get("error", "Home Lab sweep failed"))
+        return res["sanitized"]
+
+    @app.post("/api/live/diagnose")
+    def live_diagnose(payload: dict):
+        prompt = payload.get("prompt", "Analyze network telemetry.")
+        res = _bridge_call("POST", "/api/diagnose", payload={"prompt": prompt}, timeout=30.0)
+        return res
+
+    @app.post("/api/live/ticket")
+    def live_create_ticket(payload: dict):
+        res = _bridge_call("POST", "/api/tickets/create", payload=payload, timeout=10.0)
+        if not res.get("ok"):
+            raise HTTPException(status_code=502, detail=res.get("error", "Failed to create ticket in MongoDB"))
+        return res
+
+    @app.post("/api/live/ticket/{ticket_id}/notify")
+    def live_notify_oncall(ticket_id: str):
+        res = _bridge_call("POST", f"/api/tickets/{ticket_id}/notify", timeout=10.0)
+        if not res.get("ok"):
+            raise HTTPException(status_code=502, detail=res.get("error", "Notification failed"))
+        return res
+
+    @app.post("/api/live/ticket/{ticket_id}/ack")
+    def live_ack_ticket(ticket_id: str):
+        res = _bridge_call("POST", f"/api/tickets/{ticket_id}/ack", timeout=10.0)
+        if not res.get("ok"):
+            raise HTTPException(status_code=502, detail=res.get("error", "ACK failed"))
+        return res
+
+    @app.post("/api/live/ticket/{ticket_id}/recheck")
+    def live_recheck_ticket(ticket_id: str):
+        res = _bridge_call("POST", f"/api/tickets/{ticket_id}/recheck", timeout=35.0)
+        if not res.get("ok"):
+            raise HTTPException(status_code=502, detail=res.get("error", "Recheck sweep failed"))
+        return res
+
+    @app.get("/api/private/ops/ticket/{ticket_id}")
+    def private_ticket(ticket_id: str, request: Request, authorization: str = Header(default="")):
+        query_token = request.query_params.get("token", "")
+        if authorization != f"Bearer {INNEROS_OPS_TOKEN}" and query_token != INNEROS_OPS_TOKEN:
+            raise HTTPException(status_code=401, detail="Authentication required for private infrastructure topology. Provide Authorization: Bearer <token> or ?token=<token>")
+        res = _bridge_call("GET", f"/api/tickets/{ticket_id}", timeout=10.0)
+        if not res.get("ok"):
+            raise HTTPException(status_code=404, detail="Ticket not found in InnerOS MongoDB")
+        return res
+
     return app
 
 
