@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "inneros-verified-operations"
+version = "0.6.0"
+description = "InnerOS Verified Operations | Vultr Agent Rush 2026"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Rafael Lopez", email = "rafagye@gmail.com"},
+    {name = "InnerChispa LLC", email = "ops@pcdoctor.ai"}
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

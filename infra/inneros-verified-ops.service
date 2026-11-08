@@ -1,0 +1,16 @@
+[Unit]
+Description=InnerOS Verified Operations v0.6.0
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/inneros-vultr-agent-rush
+Environment=PORT=8792
+Environment=PYTHONPATH=/opt/inneros-vultr-agent-rush/src
+ExecStart=/usr/bin/python3 -m inneros_verified_ops.web
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

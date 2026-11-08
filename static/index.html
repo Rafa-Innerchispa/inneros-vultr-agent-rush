@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>InnerOS Verified Operations v0.6.0 | Vultr Agent Rush</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <span class="brand-badge">VULTR '26</span>
+        <div>
+          <h1>InnerOS Verified Operations <span style="font-size:0.9rem;color:var(--accent-cyan);font-weight:400;">v0.6.0</span></h1>
+          <p>Governed Autonomous IT Operations for the Future of Work · Powered by Vultr Cloud</p>
+        </div>
+      </div>
+      <div class="system-status-bar">
+        <div class="status-item">
+          <span class="status-dot"></span>
+          <span>HOST: <strong id="host-name">Vultr Miami</strong></span>
+        </div>
+        <div class="status-item">
+          <span>IP: <strong id="host-ip">45.77.164.161</strong></span>
+        </div>
+        <div class="status-item">
+          <span>STATUS: <strong style="color:var(--accent-emerald);">ACTIVE</strong></span>
+        </div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Left Column: Governed Incident Lifecycle -->
+      <section class="card">
+        <div class="card-header">
+          <h2>Governed Incident Lifecycle Stepper</h2>
+          <span class="badge badge-high" id="active-incident-id">NO ACTIVE INCIDENT</span>
+        </div>
+
+        <div class="stepper" id="stepper">
+          <div class="step-item" id="step-1">
+            <span class="step-num">1</span>
+            <div class="step-content">
+              <div class="step-title">Ingest Operational Incident</div>
+              <div class="step-desc">Simulate telemetry degradation signal (connection pool exhaustion, latency spike).</div>
+            </div>
+          </div>
+
+          <div class="step-item" id="step-2">
+            <span class="step-num">2</span>
+            <div class="step-content">
+              <div class="step-title">Autonomous Agentic Diagnosis</div>
+              <div class="step-desc">Perform root-cause analysis across cloud logs and telemetry metrics.</div>
+            </div>
+          </div>
+
+          <div class="step-item" id="step-3">
+            <span class="step-num">3</span>
+            <div class="step-content">
+              <div class="step-title">Propose Governed Remediation Plan</div>
+              <div class="step-desc">Synthesize bounded, reversible remediation steps with safety invariants.</div>
+            </div>
+          </div>
+
+          <div class="step-item" id="step-4">
+            <span class="step-num">4</span>
+            <div class="step-content">
+              <div class="step-title">Bind ITSM Incident Ticket</div>
+              <div class="step-desc">Formalize change management ticket awaiting human operator authorization.</div>
+            </div>
+          </div>
+
+          <div class="step-item" id="step-5">
+            <span class="step-num">5</span>
+            <div class="step-content">
+              <div class="step-title">Operator Human-in-the-Loop Approval</div>
+              <div class="step-desc">Operator validates blast radius and issues explicit cryptographic grant token.</div>
+            </div>
+          </div>
+
+          <div class="step-item" id="step-6">
+            <span class="step-num">6</span>
+            <div class="step-content">
+              <div class="step-title">Remediation Execution & Proof</div>
+              <div class="step-desc">Safely apply remediation actions and verify telemetry normalization.</div>
+            </div>
+          </div>
+
+          <div class="step-item" id="step-7">
+            <span class="step-num">7</span>
+            <div class="step-content">
+              <div class="step-title">Cryptographic Notarization</div>
+              <div class="step-desc">Generate immutable SHA-256 evidence receipt chained into the platform ledger.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions-bar">
+          <button id="btn-next-step" class="btn-primary">▶ Next Action Step</button>
+          <button id="btn-run-all" class="btn-outline">⚡ Run Full Automated Lifecycle</button>
+          <button id="btn-reset" class="btn-outline">↺ New Incident</button>
+        </div>
+
+        <div style="margin-top:1.25rem;">
+          <h3 style="font-size:0.95rem;margin-bottom:0.5rem;color:var(--text-muted);">Cryptographic Evidence Receipt</h3>
+          <div class="hash-box" id="evidence-hash-box">
+            Awaiting incident resolution to generate tamper-evident SHA-256 evidence receipt...
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Containment Lab & Verification -->
+      <div>
+        <section class="card" style="margin-bottom:1.5rem;">
+          <div class="card-header">
+            <h2>Containment Lab</h2>
+            <span class="badge badge-medium" id="containment-badge">FAIL-CLOSED</span>
+          </div>
+          <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem;">
+            Guarantees Blast Radius Zero by verifying sandboxed boundaries before granting worker execution.
+          </p>
+
+          <div class="scenario-card">
+            <div style="display:flex;justify-content:space-between;font-weight:600;font-size:0.85rem;">
+              <span>1. Egress Leak Prevention</span>
+              <span id="sc-1-status" style="color:var(--accent-amber);">PENDING</span>
+            </div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Blocks unauthorized network egress to unvetted external hosts.</div>
+          </div>
+
+          <div class="scenario-card">
+            <div style="display:flex;justify-content:space-between;font-weight:600;font-size:0.85rem;">
+              <span>2. Credential Exfiltration Defense</span>
+              <span id="sc-2-status" style="color:var(--accent-amber);">PENDING</span>
+            </div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Enforces read-only root and AppArmor isolation on sensitive volumes.</div>
+          </div>
+
+          <div class="scenario-card">
+            <div style="display:flex;justify-content:space-between;font-weight:600;font-size:0.85rem;">
+              <span>3. Filesystem Quarantine</span>
+              <span id="sc-3-status" style="color:var(--accent-amber);">PENDING</span>
+            </div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Discards diffs in ephemeral container layer upon run termination.</div>
+          </div>
+
+          <button id="btn-run-containment" class="btn-outline" style="width:100%;justify-content:center;margin-top:0.5rem;">
+            🛡 Validate Containment Boundaries
+          </button>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <h2>Independent Notary Verification</h2>
+          </div>
+          <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.75rem;">
+            Verify any operational SHA-256 hash against the tamper-evident ledger.
+          </p>
+          <input type="text" id="verify-input" placeholder="Paste SHA-256 hash..." style="width:100%;padding:0.6rem;background:#06090e;border:1px solid var(--bg-card-border);border-radius:6px;color:var(--accent-cyan);font-family:var(--font-mono);font-size:0.8rem;margin-bottom:0.75rem;" />
+          <button id="btn-verify-hash" class="btn-outline" style="width:100%;justify-content:center;">
+            🔍 Audit Hash Invariant
+          </button>
+          <div id="verify-result" style="margin-top:0.75rem;font-size:0.8rem;font-family:var(--font-mono);"></div>
+        </section>
+      </div>
+    </div>
+
+    <!-- Bottom: Live Audit Stream -->
+    <section class="card">
+      <div class="card-header">
+        <h2>Live Operation Telemetry & Provenance Logs</h2>
+        <span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--accent-cyan);">IMMUTABLE AUDIT STREAM</span>
+      </div>
+      <div class="terminal-logs" id="terminal-logs">
+        <div class="terminal-line">[SYSTEM_INIT] InnerOS Verified Operations v0.6.0 online on Vultr Cloud Compute node.</div>
+        <div class="terminal-line">[POLICY_LOADED] Strict human authorization required for destructive mutations. Fail-closed enabled.</div>
+      </div>
+    </section>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
