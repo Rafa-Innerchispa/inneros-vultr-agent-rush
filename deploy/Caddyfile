@@ -1,0 +1,6 @@
+# Set DEMO_DOMAIN on the Vultr host before enabling the public compose profile.
+# Caddy terminates HTTPS; the FastAPI port is bound to loopback only.
+{$DEMO_DOMAIN} {
+    encode zstd gzip
+    reverse_proxy inneros:8000
+}

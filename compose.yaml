@@ -1,0 +1,59 @@
+services:
+  inneros:
+    build: .
+    restart: unless-stopped
+    environment:
+      DB_PATH: /data/inneros_agent_rush.sqlite
+      PUBLIC_DEMO: "1"
+      AUTH_TOKEN: ""
+      # Local-first inference is optional; never place model secrets in Git.
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      # Remote Docker worker VM is PRIVATE and optional.
+      SANDBOX_RUNNER_URL: ${SANDBOX_RUNNER_URL:-}
+      RUNNER_TOKEN: ${RUNNER_TOKEN:-}
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - evidence:/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+    pids_limit: 80
+    mem_limit: 512m
+
+  caddy:
+    image: caddy:2.10-alpine
+    profiles: ["public"]
+    restart: unless-stopped
+    depends_on:
+      - inneros
+    environment:
+      DEMO_DOMAIN: ${DEMO_DOMAIN:-localhost}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    read_only: true
+    tmpfs:
+      - /tmp
+    mem_limit: 128m
+
+volumes:
+  evidence:
+  caddy_data:
+  caddy_config:

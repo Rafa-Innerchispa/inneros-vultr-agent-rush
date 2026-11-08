@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="InnerOS Verified Operations: enterprise agents with proof of work">
+<title>InnerOS | Verified Operations</title>
+<link rel="stylesheet" href="/static/style.css">
+<script defer src="/static/app.js"></script>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-icon">✳</span><span>INNER<span class="brand-light">OS</span><small>AGENT RUSH EDITION</small></span></div>
+    <div class="side-label">WORKSPACE</div>
+    <nav aria-label="Workspace">
+      <a href="#overview" class="nav-active"><span>◫</span> Mission control</a>
+      <a href="#workflows"><span>⌘</span> Workflows</a>
+      <a href="#runs"><span>☷</span> Execution ledger</a>
+      <a href="#containment"><span>⬡</span> Containment Lab</a>
+      <a href="#tickets"><span>✓</span> Service tickets</a>
+      <a href="/judge" id="judge-link"><span>★</span> Judge walkthrough</a>
+      <a href="#architecture"><span>◇</span> Architecture</a>
+    </nav>
+    <div class="session-access">
+      <label for="operator-token">OPERATOR ACCESS</label>
+      <input id="operator-token" type="password" autocomplete="off" placeholder="Session token (optional)">
+      <button id="operator-connect" type="button">Set session token</button>
+      <div id="access-mode" class="access-note">Public demo mode</div>
+    </div>
+    <div class="side-bottom">
+      <div class="platform-label"><span class="live-dot"></span> INNERCHISPA · 2026</div>
+      <div class="side-note">A workflow is not complete until its result can be verified.</div>
+    </div>
+  </aside>
+
+  <main id="overview">
+    <header class="topbar">
+      <div class="breadcrumb">InnerOS <span>/</span> Verified Operations <span>/</span> Mission Control</div>
+      <div class="top-right"><span class="environment">VULTR AGENT RUSH · 2026</span><span class="avatar">IC</span></div>
+    </header>
+    <div class="content">
+      <section class="judge-workthrough" id="judge-workthrough" aria-label="Live judge walkthrough" hidden>
+        <div class="judge-head">
+          <div>
+            <div class="eyebrow">JUDGE VIEW / LIVE ACCEPTANCE</div>
+            <h2>Prove the workflow, step by step.</h2>
+            <p>Everything below calls this application's real backend. The incident and closure are fictional. No customer devices are changed.</p>
+          </div>
+          <span class="judge-mode" id="judge-mode">Checking server…</span>
+        </div>
+        <div class="judge-steps">
+          <article class="judge-step">
+            <span class="judge-number">01 / EXECUTE</span>
+            <h3>Open a fictional incident</h3>
+            <p>Classify a fiber uplink outage, generate a report, and persist a linked service ticket.</p>
+            <button type="button" id="judge-start" class="judge-btn">Create live incident</button>
+            <div class="judge-step-result" id="judge-step-one" role="status" aria-live="polite">Not run yet</div>
+          </article>
+          <article class="judge-step">
+            <span class="judge-number">02 / VERIFY</span>
+            <h3>Verify stored evidence</h3>
+            <p>Ask the server to validate the report digest, event chain, and saved ticket history.</p>
+            <button type="button" id="judge-verify" class="judge-btn" disabled>Verify evidence</button>
+            <div class="judge-step-result" id="judge-step-two" role="status" aria-live="polite">Waiting for step 1</div>
+          </article>
+          <article class="judge-step">
+            <span class="judge-number">03 / COMPLETE</span>
+            <h3>Record the demo lifecycle</h3>
+            <p>Acknowledge and close a <strong>synthetic</strong> ticket. This is not a claim of real hardware repair.</p>
+            <button type="button" id="judge-complete" class="judge-btn" disabled>Complete synthetic ticket</button>
+            <div class="judge-step-result" id="judge-step-three" role="status" aria-live="polite">Waiting for verification</div>
+          </article>
+        </div>
+        <div class="judge-proof" id="judge-proof" aria-live="polite">Begin with step 1. No pre-recorded traces or fabricated execution states.</div>
+      </section>
+      <div class="hero">
+        <div class="eyebrow"><span class="small-dot"></span> VERIFIABLE AUTONOMY</div>
+        <h1>Agents that do the work.<br><em>Evidence that proves it.</em></h1>
+        <p>From a real business incident to a documented, traceable outcome. Policy-driven workflows, isolated code execution, and tamper-evident logs.</p>
+        <div class="hero-tags"><span>LOCAL-FIRST AI</span><span>VULTR DEPLOYMENT TARGET</span><span>SHA-256 EVIDENCE</span></div>
+      </div>
+
+      <section class="stats" aria-label="Platform status">
+        <article class="stat"><div class="stat-label">WORKFLOW ENGINE</div><div class="stat-value" id="engine-status">Checking…</div><div class="stat-sub">Server-side orchestration</div></article>
+        <article class="stat"><div class="stat-label">EXECUTION SANDBOX</div><div class="stat-value" id="sandbox-status"><span class="indicator orange"></span>Checking</div><div class="stat-sub">Disposable, no-network containers</div></article>
+        <article class="stat"><div class="stat-label">INFERENCE ENGINE</div><div class="stat-value" id="model-status">Checking</div><div class="stat-sub">Qwen local / rules fallback</div></article>
+        <article class="stat"><div class="stat-label">VERIFIED RUNS</div><div class="stat-value" id="run-count">0</div><div class="stat-sub">Persistent evidence ledger</div></article>
+      </section>
+
+      <div class="section-title" id="workflows"><div><div class="eyebrow">01 / ACTUAL WORK</div><h2>Execute a workflow</h2></div><span class="section-annotation">No simulated execution results</span></div>
+      <section class="workflows">
+        <article class="workflow-card accent-cyan">
+          <div class="card-head"><span class="card-icon">↗</span><span class="chip">AVAILABLE NOW</span></div>
+          <h3>Incident → Action Plan</h3>
+          <p>Turn a customer's infrastructure issue into a classified priority, an actionable service plan, and a SHA-256 evidence trail.</p>
+          <label for="incident-title">INCIDENT</label>
+          <input id="incident-title" maxlength="160" value="Residential property uplink SFP1 offline">
+          <label for="incident-description">WHAT HAPPENED</label>
+          <textarea id="incident-description" rows="3" maxlength="5000">Administration switch lost its fiber uplink. Cameras remain visible locally but the control room cannot reach remote devices.</textarea>
+          <label for="incident-customer">CUSTOMER</label>
+          <input id="incident-customer" maxlength="100" value="Demo property">
+          <p class="privacy-note">Public-demo submissions are visible to other visitors. Use fictional examples only.</p>
+          <button id="triage-btn" class="primary">Run operational workflow <span>↗</span></button>
+        </article>
+        <article class="workflow-card accent-purple">
+          <div class="card-head"><span class="card-icon purple">⌘</span><span class="chip lavender">DOCKER REQUIRED</span></div>
+          <h3>Issue → Verified Repair</h3>
+          <p>Reproduce a bug, generate a candidate patch, rerun assertions inside an ephemeral container, and record the outcome.</p>
+          <label for="case-select">EXECUTION SCENARIO</label>
+          <select id="case-select"><option value="uptime_boundary">Uptime boundary bug</option><option value="sla_sign">SLA calculation bug</option><option value="runaway_loop">Containment: infinite loop</option></select>
+          <div class="warning-line">Untrusted code is never executed in the web app process.</div>
+          <button id="repair-btn" class="secondary">Run isolated verification <span>↗</span></button>
+          <div class="sandbox-guard" id="sandbox-guard"></div>
+        </article>
+      </section>
+      <section class="containment-panel" id="containment" aria-labelledby="containment-title">
+        <div class="containment-copy">
+          <div class="eyebrow">02 / SECOND TECHNICAL FRONT</div>
+          <h2 id="containment-title">Containment Lab. A proof you can challenge.</h2>
+          <p>Run one of three fixed safety probes in a disposable Docker container. The backend records its real outcome and independently checks container removal. No worker attached? The test is marked <strong>BLOCKED</strong>, not silently simulated.</p>
+          <p class="privacy-note">This is a technical safety demonstration, not a guarantee against container escape. Blast Radius Zero still requires Vultr Serverless Inference and execution on Vultr.</p>
+        </div>
+        <div class="containment-controls">
+          <label for="containment-case">SELECT ISOLATION PROBE</label>
+          <select id="containment-case">
+            <option value="network_egress">01 · Outbound network denied</option>
+            <option value="read_only_root">02 · Read-only root filesystem</option>
+            <option value="runaway_timeout">03 · Infinite loop stopped + cleanup verified</option>
+          </select>
+          <button type="button" id="containment-btn" class="secondary">Run live containment check ↗</button>
+          <div id="containment-availability" class="containment-availability" role="status">Checking isolated worker…</div>
+          <div id="containment-result" class="containment-result" role="status" aria-live="polite">No containment test run yet.</div>
+        </div>
+      </section>
+      <section class="result-panel" id="result-panel" hidden>
+        <div class="result-top"><div><div class="eyebrow">LIVE RESULT</div><h2 id="result-title">Execution</h2></div><span class="status-pill" id="result-status">Pending</span></div>
+        <p id="result-summary"></p>
+        <div class="trace" id="result-trace"></div>
+        <div class="artifact"><div class="artifact-header">EVIDENCE ARTIFACT <button id="copy-artifact" class="copy-btn" type="button">Copy</button></div><pre id="artifact-content">—</pre></div>
+        <div class="hash-row"><span>LAST EVIDENCE HASH</span><code id="result-hash">—</code></div>
+        <div class="hash-row"><span>INTEGRITY</span><strong id="result-integrity">Verification pending</strong></div>
+      </section>
+      <div class="section-title" id="runs"><div><div class="eyebrow">03 / AUDITABILITY</div><h2>Execution ledger</h2></div><button id="refresh" class="text-button">Refresh ↻</button></div>
+      <section class="ledger"><div class="ledger-heading"><span>WORKFLOW</span><span>STATUS</span><span>EVIDENCE</span></div><div id="run-list" class="run-list"><p class="empty">No executions yet. Run a workflow to create a trace.</p></div></section>
+      <div class="section-title ticket-heading" id="tickets"><div><div class="eyebrow">04 / CASE LIFECYCLE</div><h2>Service ticket board</h2></div><span class="section-annotation">Every transition leaves an audit event</span></div>
+      <section class="ticket-board" id="ticket-board" aria-label="Service ticket board"><p class="empty">No service tickets yet. Run incident triage to open one.</p></section>
+      <section id="architecture" class="architecture"><div class="eyebrow">05 / THE CONTROL PLANE</div><h2>Build for proof, not promises.</h2><div class="arch-grid"><div><strong>01 · PLAN</strong><p>Classify business impact and define a bounded task.</p></div><div><strong>02 · EXECUTE</strong><p>Send risky code into short-lived isolated containers.</p></div><div><strong>03 · VERIFY</strong><p>Test results and capture actual execution status.</p></div><div><strong>04 · ATTEST</strong><p>Append a SHA-256-linked evidence trail.</p></div></div></section>
+      <footer>InnerOS / InnerChispa · Vultr Agent Rush 2026 · Powering the Future of Work <span>BUILD 0.6.0</span></footer>
+    </div>
+  </main>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
