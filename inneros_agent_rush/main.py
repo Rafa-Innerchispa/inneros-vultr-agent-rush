@@ -36,6 +36,11 @@ class TicketAction(BaseModel):
     note: str = Field(min_length=12, max_length=1000)
 
 
+class LiveAckRequest(BaseModel):
+    operator: str = Field(min_length=3, max_length=100)
+    note: str = Field(min_length=12, max_length=1000)
+
+
 class RepairRequest(BaseModel):
     case_id: str = Field(min_length=1, max_length=50)
     title: str | None = Field(default=None, max_length=160)
@@ -302,11 +307,14 @@ def create_app(engine: WorkflowEngine | None = None, *, auth_token: str | None =
             "sites": {
                 "bellini": {"site_id": "bellini-i-ii", "label": "Torres Bellini I-II Campus", "targets": 14},
                 "home_pcdoctor_lab": {"site_id": "home_pcdoctor_lab", "label": "Casa / PC Doctor Lab", "entities": 92}
+            } if is_op else {
+                "scenario_fiber": {"id": "scenario_fiber", "label": "Escenario A: Pérdida de Enlace de Agregación SFP1 (Sandbox)", "type": "synthetic"},
+                "scenario_iot": {"id": "scenario_iot", "label": "Escenario B: Degradación de Controladores IoT (Sandbox)", "type": "synthetic"}
             },
             "inference": {
-                "engine": engine.model.label,
-                "model": os.getenv("LLM_MODEL", "QuantTrio/Qwen3-Coder-30B-A3B-Instruct-AWQ"),
-                "cost": "$0.00 (Local Invariant)"
+                "engine": engine.model.label if is_op else "Deterministic Rules / Sandboxed Evaluator",
+                "model": os.getenv("LLM_MODEL", "QuantTrio/Qwen3-Coder-30B-A3B-Instruct-AWQ") if is_op else "Sandboxed Evaluator",
+                "cost": "$0.00"
             }
         }
 
@@ -350,9 +358,9 @@ def create_app(engine: WorkflowEngine | None = None, *, auth_token: str | None =
         return res
 
     @app.post("/api/live/ticket/{ticket_id}/ack")
-    def live_ack_ticket(ticket_id: str, payload: dict | None = None, authorization: str = Header(default="")):
+    def live_ack_ticket(ticket_id: str, payload: LiveAckRequest, authorization: str = Header(default="")):
         require_operator(authorization)
-        res = _bridge_call("POST", f"/api/tickets/{ticket_id}/ack", payload=payload or {}, timeout=15.0)
+        res = _bridge_call("POST", f"/api/tickets/{ticket_id}/ack", payload=payload.model_dump(), timeout=15.0)
         if not res.get("ok"):
             raise HTTPException(status_code=502, detail=res.get("error", "ACK failed"))
         return res

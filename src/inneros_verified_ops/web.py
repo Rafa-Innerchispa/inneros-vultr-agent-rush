@@ -117,27 +117,39 @@ class VerifiedOpsHandler(BaseHTTPRequestHandler):
                     "total_incidents": len(ENGINE.list_incidents()),
                     "cloud_provider": "Vultr (Miami / Cloud Compute)",
                     "inneros_bridge": "ONLINE" if b_health.get("status") == "HEALTHY" else "STANDALONE",
-                    "inference_engine": b_health.get("model", "QuantTrio/Qwen3-Coder-30B-A3B-Instruct-AWQ (Local AMD 1.5)"),
-                    "fabric_sites": ["bellini-i-ii", "home_pcdoctor_lab"],
+                    "inference_engine": "Local SRE Model / Sandboxed Evaluator",
                 },
             )
             return
 
         if path == "/api/live/status":
+            auth_header = self.headers.get("Authorization", "")
+            scheme, _, token_candidate = auth_header.partition(" ")
+            token_candidate = token_candidate.strip()
+            is_op = (
+                token_candidate not in REVOKED_TOKENS
+                and bool(bridge_client.INNEROS_OPS_TOKEN)
+                and hmac.compare_digest(token_candidate, bridge_client.INNEROS_OPS_TOKEN)
+            )
             b_health = bridge_client.check_bridge_health()
             self._json(
                 HTTPStatus.OK,
                 {
                     "ok": True,
-                    "bridge": b_health,
+                    "authenticated": is_op,
+                    "mode": "authenticated_live_ops" if is_op else "public_demo",
+                    "bridge": b_health if is_op else {"status": b_health.get("status", "UNAVAILABLE")},
                     "sites": {
                         "bellini": {"site_id": "bellini-i-ii", "targets": 14, "mode": "read_only_icmp_tcp"},
                         "home_pcdoctor_lab": {"site_id": "home_pcdoctor_lab", "devices": 92, "source": "home_assistant"},
+                    } if is_op else {
+                        "scenario_fiber": {"id": "scenario_fiber", "label": "Escenario A: Enlace SFP1 (Sandbox)", "type": "synthetic"},
+                        "scenario_iot": {"id": "scenario_iot", "label": "Escenario B: Controladores IoT (Sandbox)", "type": "synthetic"}
                     },
                     "local_ai": {
-                        "model": "QuantTrio/Qwen3-Coder-30B-A3B-Instruct-AWQ",
-                        "status": "active_on_amd15",
-                        "cost": "$0.00 (Local Invariant)",
+                        "model": "QuantTrio/Qwen3-Coder-30B-A3B-Instruct-AWQ" if is_op else "Sandboxed Evaluator",
+                        "status": "active_on_amd15" if is_op else "active",
+                        "cost": "$0.00",
                     },
                 },
             )

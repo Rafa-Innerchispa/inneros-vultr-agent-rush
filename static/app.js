@@ -1,5 +1,6 @@
 "use strict";
 const $ = (id) => document.getElementById(id);
+const escapeHTML = (str) => String(str || "").replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
 let token = "";
 let latestArtifact = "";
 const request = async (path, options = {}) => {
@@ -482,8 +483,8 @@ if (judgeView) {
         judgeRunId = run.id; judgeTicketId = run.ticket_id;
         const classified = run.events.find(e => e.step === "classify")?.details?.priority || "P1";
         const sha = (run.events.at(-1)?.hash || "").slice(0, 16);
-        judgeMessage("judge-step-one", "PASS · " + classified + " CRÍTICO · Ticket " + judgeTicketId.slice(0, 12) + " · SHA: " + sha + "…", "pass");
-        $("judge-proof").textContent = "Verified SHA-256 (Evidencia): " + (run.events.at(-1)?.hash || "valid") + " | Run ID: " + judgeRunId + " | Ticket: " + judgeTicketId;
+        judgeMessage("judge-step-one", "SIMULATED · " + classified + " CRÍTICO · Ticket " + judgeTicketId.slice(0, 12) + " · SHA: " + sha + "…", "pass");
+        $("judge-proof").textContent = "Verified SHA-256 (Sandbox): " + (run.events.at(-1)?.hash || "valid") + " | Run ID: " + judgeRunId + " | Ticket: " + judgeTicketId;
 
         // Show telemetry detail box for public demo
         const detailBox = $("judge-telemetry-detail");
@@ -550,8 +551,8 @@ if (judgeView) {
         ]);
         if (!v.verified || !t.evidence_chain_valid || t.run_id !== judgeRunId || !v.final_evidence_hash)
           throw new Error("Record or ticket integrity failed");
-        judgeMessage("judge-step-two", "PASS · Diagnóstico SRE Verificado · " + v.event_count + " eventos en cadena hash", "pass");
-        $("judge-proof").textContent = "Verified SHA-256: " + v.final_evidence_hash + " | Integridad de cadena criptográfica validada. Remediación física: PENDIENTE.";
+        judgeMessage("judge-step-two", "SIMULATED · Diagnóstico SRE (Sandbox) · " + v.event_count + " eventos en cadena hash", "pass");
+        $("judge-proof").textContent = "Verified SHA-256: " + v.final_evidence_hash + " | Diagnóstico SRE (Simulación). Fallo Activo.";
         const detailBox = $("judge-telemetry-detail");
         if (detailBox) {
           detailBox.classList.add("visible");
@@ -612,32 +613,19 @@ if (judgeView) {
         if ($("btn-view-topology")) $("btn-view-topology").disabled = false;
         if ($("btn-export-report")) $("btn-export-report").disabled = false;
 
-        $("judge-proof").innerHTML = "Ticket Operativo: <strong>" + ticket.ticket_id + "</strong> (Estado: OPEN / P1) | Evidencia SHA-256: <code>" + ticket.evidence_hash + "</code><br>" +
+        $("judge-proof").innerHTML = "Ticket Operativo: <strong>" + escapeHTML(ticket.ticket_id) + "</strong> (Estado: " + escapeHTML(ticket.status || "OPEN") + " / P1) | Evidencia SHA-256: <code>" + escapeHTML(ticket.evidence_hash) + "</code><br>" +
           "<em>Zero-Fabrication: Se requiere confirmación humana para registrar el acuse técnico (ACK).</em>";
       } else {
-        // Fallback: public demo ledger flow
+        // Public demo flow: Keep ticket open on ledger, enabling human ACK in Step 4
         const path = "/api/tickets/" + encodeURIComponent(judgeTicketId);
         let ticket = await request(path);
-        if (ticket.status === "open") {
-          ticket = await request(path + "/action", {method:"POST", body:JSON.stringify({
-            action:"acknowledge", note:"Operator intervention acknowledgement; verified evidence recorded"
-          })});
-        }
-        if (ticket.status === "in_progress") {
-          ticket = await request(path + "/action", {method:"POST", body:JSON.stringify({
-            action:"resolve", note:"Ticket resolved with verified SHA-256 evidence chain"
-          })});
-        }
-        ticket = await request(path);
-        if (ticket.status !== "resolved" || !ticket.evidence_chain_valid || ticket.history.length < 3)
-          throw new Error("Ticket did not complete with a valid evidence chain");
-        judgeMessage("judge-step-three", "PASS · ticket resolved, " + ticket.history.length + " verified events", "pass");
-        judgeMessage("judge-step-notify-ack", "Ticket de evaluación completado en ledger inmutable.", "pass");
-        $("judge-proof").textContent = "Complete: server-side report + linked ticket + verified event chains.";
+        judgeMessage("judge-step-three", "SIMULATED · " + ticket.id + " (P1 CRÍTICO) · Registrado en Ledger (Estado: OPEN)", "pass");
+        judgeMessage("judge-step-notify-ack", "Listo para despacho de alerta (simulada) y acuse técnico.", "");
+        $("judge-proof").innerHTML = "Ticket de Evaluación: <strong>" + escapeHTML(ticket.id) + "</strong> (Estado: OPEN / P1) | Eventos: " + (ticket.history ? ticket.history.length : 1) + "<br>" +
+          "<em>Zero-Fabrication: Se requiere confirmación de acuse para registrar la recepción técnica (ACK).</em>";
         if ($("judge-notify")) $("judge-notify").disabled = false;
         if ($("ack-editor-box")) $("ack-editor-box").style.display = "flex";
         if ($("judge-ack-btn")) $("judge-ack-btn").disabled = false;
-        if ($("judge-recheck")) $("judge-recheck").disabled = false;
         if ($("btn-export-report")) $("btn-export-report").disabled = false;
       }
 
@@ -656,8 +644,8 @@ if (judgeView) {
       notifyBtn.disabled = true;
 
       if (!isOperatorAuthenticated) {
-        judgeMessage("judge-step-notify-ack", "ALERTA DESPACHADA (DEMO) · Despacho simulado al canal de soporte técnico (DELIVERED)", "pass");
-        toast("Alerta interna enviada al canal de guardia de prueba.");
+        judgeMessage("judge-step-notify-ack", "SIMULATED · Notificación simulada a canal de soporte (SIMULATED - No live alert sent)", "pass");
+        toast("Alerta simulada generada en el entorno de prueba.");
         return;
       }
 
@@ -668,7 +656,7 @@ if (judgeView) {
         const res = await request("/api/live/ticket/" + encodeURIComponent(liveTicketData.ticket_id) + "/notify", {method: "POST"});
         if (!res.ok) throw new Error(res.error || "Fallo en notificación");
         const notif = res.notification || {};
-        judgeMessage("judge-step-notify-ack", "ALERTA DESPACHADA · Destinatario: " + notif.recipient + " · Mensaje: " + (notif.message_id || "OK") + " (DELIVERED)", "pass");
+        judgeMessage("judge-step-notify-ack", "ALERTA DESPACHADA · Destinatario: " + escapeHTML(notif.recipient) + " · Mensaje: " + escapeHTML(notif.message_id || "OK") + " (DELIVERED)", "pass");
         toast("Alerta interna despachada a PC Doctor On-Call.");
       } catch (e) {
         judgeMessage("judge-step-notify-ack", "ERROR AL NOTIFICAR · " + e.message, "fail");
@@ -697,9 +685,11 @@ if (judgeView) {
             method: "POST",
             body: JSON.stringify({action: "acknowledge", note: opNote})
           });
-          judgeMessage("judge-step-notify-ack", "ACK CONFIRMADO (DEMO) · Operador: " + opName + " · Registrado en ledger auditable", "pass");
+          judgeMessage("judge-step-notify-ack", "SIMULATED · Acuse registrado (SIMULATED) · Operador: " + escapeHTML(opName) + " · Estado: IN_PROGRESS", "pass");
           toast("Acuse técnico registrado en el ticket de prueba.");
           if ($("judge-recheck")) $("judge-recheck").disabled = false;
+          $("judge-proof").innerHTML += "<br><span class=\"proof-invariant\">✓ Acuse Humano Registrado (SIMULATED): Operador " + escapeHTML(opName) + " asignado. Listo para recheck.</span>";
+          await refresh();
         } catch (e) {
           judgeMessage("judge-step-notify-ack", "ERROR EN ACK · " + e.message, "fail");
           ackBtn.disabled = false;
@@ -717,11 +707,11 @@ if (judgeView) {
         });
         if (!res.ok) throw new Error(res.error || "Fallo al registrar ACK");
 
-        judgeMessage("judge-step-notify-ack", "ACK CONFIRMADO · Operador: " + opName + " · Estado: ACKNOWLEDGED · Registrado en MongoDB", "pass");
+        judgeMessage("judge-step-notify-ack", "ACK CONFIRMADO · Operador: " + escapeHTML(opName) + " · Estado: ACKNOWLEDGED · Registrado en MongoDB", "pass");
         toast("Acuse técnico registrado correctamente en el ticket.");
 
         if ($("judge-recheck")) $("judge-recheck").disabled = false;
-        $("judge-proof").innerHTML += "<br><span class=\"proof-invariant\">✓ Acuse Humano Registrado: Operador " + opName + " asignado. Listo para recheck físico.</span>";
+        $("judge-proof").innerHTML += "<br><span class=\"proof-invariant\">✓ Acuse Humano Registrado: Operador " + escapeHTML(opName) + " asignado. Listo para recheck físico.</span>";
       } catch (e) {
         judgeMessage("judge-step-notify-ack", "ERROR EN ACK · " + e.message, "fail");
         ackBtn.disabled = false;
@@ -736,8 +726,8 @@ if (judgeView) {
       recheckBtn.disabled = true;
 
       if (!isOperatorAuthenticated) {
-        judgeMessage("judge-step-four", "PASS · Recheck completado: ANOMALÍA PERSISTENTE (DEMO). Auto-cierre fraudulento rehusado.", "pass");
-        $("judge-proof").innerHTML += "<br><span class=\"proof-invariant\">✓ Invariante Zero-Fabrication: La anomalía persiste en el enlace de agregación. El ticket se mantiene ABIERTO pendiente de intervención física.</span>";
+        judgeMessage("judge-step-four", "SIMULATED · Recheck completado: ANOMALÍA PERSISTENTE (SIMULATED). Auto-cierre fraudulento rehusado.", "pass");
+        $("judge-proof").innerHTML += "<br><span class=\"proof-invariant\">✓ Invariante Zero-Fabrication (Sandbox): La anomalía persiste en la simulación. El ticket se mantiene ABIERTO/EN PROGRESO.</span>";
         toast("Recomprobación completada: falla persistente confirmada.");
         return;
       }
@@ -750,7 +740,7 @@ if (judgeView) {
         if (!recheckRes.ok) throw new Error(recheckRes.error || "Fallo en recheck de hardware");
 
         const r = recheckRes.recheck || {};
-        judgeMessage("judge-step-four", "PASS · Recheck completado: " + r.conclusion + " (" + r.offline_count + " OFFLINE). Auto-cierre fraudulento rehusado.", "pass");
+        judgeMessage("judge-step-four", "PASS · Recheck completado: " + escapeHTML(r.conclusion) + " (" + escapeHTML(r.offline_count) + " OFFLINE). Auto-cierre fraudulento rehusado.", "pass");
 
         $("judge-proof").innerHTML += "<br><span class=\"proof-invariant\">✓ Invariante Zero-Fabrication: La falla física persiste en sitio. El ticket se mantiene ABIERTO y documentado.</span>";
       } catch (e) {
@@ -795,47 +785,97 @@ if (judgeView) {
   // Export Technical Report (Markdown with full SHA-256 evidence trail)
   const btnExport = $("btn-export-report");
   if (btnExport) {
-    btnExport.addEventListener("click", () => {
-      if (!liveTicketData) return;
-      const t = liveTicketData;
-      const reportMd = [
-        "# INFORME TÉCNICO DE INCIDENTE OPERATIVO — INNEROS VERIFIED OPERATIONS",
-        "",
-        `**ID del Ticket:** \`${t.ticket_id}\``,
-        `**Sitio Supervisado:** \`${t.site_id}\` (${t.site_id === "bellini-i-ii" ? "Torres Bellini I-II Campus" : "Casa / PC Doctor Lab"})`,
-        `**Severidad:** \`${t.severity || "P1 CRITICAL"}\``,
-        `**Estado Actual:** \`${t.status || "ACKNOWLEDGED / IN_PROGRESS"}\``,
-        `**Fecha de Detección:** ${t.created_at || new Date().toISOString()}`,
-        `**Hash Criptográfico de Evidencia:** \`${t.evidence_hash}\``,
-        "",
-        "---",
-        "",
-        "## 1. RESUMEN DE LA TELEMETRÍA Y FALLO OBSERVADO",
-        `- **Objetivos Auditados:** 14 dispositivos (Switch de Administración Hikvision, APs GWN, PBX Grandstream, NVR Dahua, Gateway GCC6010).`,
-        `- **Dispositivos Respondiendo:** 7`,
-        `- **Dispositivos Sin Respuesta:** 7 (Switch Hikvision DS-3E1510P-EI/M, APs GWN 213, 216, 227).`,
-        `- **Anomalía Principal:** ${JSON.stringify(t.anomaly || {})}`,
-        "",
-        "## 2. DIAGNÓSTICO SRE AUTÓNOMO (QWEN 30B - AMD 1.5)",
-        t.diagnosis || "Sin diagnóstico disponible.",
-        "",
-        "## 3. PROTOCOLO DE CONTENCIÓN Y RECOMENDACIONES",
-        ...(t.recommendations || []).map(r => `- ${r}`),
-        "",
-        "## 4. REGISTRO DE CADENA DE CUSTODIA Y AUDITORÍA",
-        `- **Notificación On-Call:** Despachada a cola interna de Rafael Lopez (DELIVERED).`,
-        `- **Acuse Técnico (ACK):** Confirmado por operador humano con nota técnica en registro inmutable.`,
-        `- **Recheck Físico:** Realizado. Se confirma persistencia de la falla física. Ticket permanece abierto.`,
-        `- **Política Zero-Fabrication:** Certificada. Sin datos sintéticos ni falsas resoluciones.`,
-        "",
-        "---",
-        "*Generado automáticamente por InnerOS Verified Operations v0.6.0 · Vultr Agent Rush 2026*"
-      ].join("\n");
+    btnExport.addEventListener("click", async () => {
+      let reportMd = "";
+      if (isOperatorAuthenticated && liveTicketData) {
+        const t = liveTicketData;
+        const onlineCount = liveTelemetry ? liveTelemetry.online_count : "N/A";
+        const offlineCount = liveTelemetry ? liveTelemetry.offline_count : "N/A";
+        const totalTargets = liveTelemetry ? (liveTelemetry.total_targets || (liveTelemetry.targets ? liveTelemetry.targets.length : "N/A")) : "N/A";
+        const anomalies = liveTelemetry && liveTelemetry.anomalies_detected ? JSON.stringify(liveTelemetry.anomalies_detected, null, 2) : "N/A";
+
+        reportMd = [
+          "# INFORME TÉCNICO DE INCIDENTE OPERATIVO — INNEROS VERIFIED OPERATIONS",
+          "",
+          `**ID del Ticket:** \`${t.ticket_id}\``,
+          `**Sitio Supervisado:** \`${t.site_id}\``,
+          `**Severidad:** \`${t.severity || "P1 CRITICAL"}\``,
+          `**Estado Actual:** \`${t.status || "ACKNOWLEDGED / IN_PROGRESS"}\``,
+          `**Fecha de Creación:** ${t.created_at || new Date().toISOString()}`,
+          `**Hash Criptográfico de Evidencia:** \`${t.evidence_hash}\``,
+          "",
+          "---",
+          "",
+          "## 1. RESUMEN DE LA TELEMETRÍA Y FALLO OBSERVADO",
+          `- **Total Dispositivos Auditados:** ${totalTargets}`,
+          `- **Dispositivos Respondiendo:** ${onlineCount}`,
+          `- **Dispositivos Sin Respuesta:** ${offlineCount}`,
+          `- **Anomalías Físicas Detectadas:**`,
+          "```json",
+          anomalies,
+          "```",
+          "",
+          "## 2. DIAGNÓSTICO SRE AUTÓNOMO (QWEN 30B - AMD 1.5)",
+          (liveDiagnosis && (liveDiagnosis.raw_output || liveDiagnosis.diagnosis)) || t.diagnosis || "Sin diagnóstico disponible.",
+          "",
+          "## 3. PROTOCOLO DE CONTENCIÓN Y RECOMENDACIONES",
+          ...((t.recommendations || (liveDiagnosis && liveDiagnosis.recommendations) || []).map(r => `- ${r}`)),
+          "",
+          "## 4. REGISTRO DE CADENA DE CUSTODIA Y AUDITORÍA",
+          `- **Notificación On-Call:** Despachada a cola interna autorizada.`,
+          `- **Acuse Técnico (ACK):** Confirmado por operador humano con nota técnica en registro inmutable.`,
+          `- **Recheck Físico:** Realizado. Se confirma persistencia de la falla física. Ticket permanece abierto.`,
+          `- **Política Zero-Fabrication:** Certificada. Sin datos sintéticos ni falsas resoluciones.`,
+          "",
+          "---",
+          "*Generado automáticamente por InnerOS Verified Operations · Vultr Agent Rush 2026*"
+        ].join("\n");
+      } else if (judgeTicketId) {
+        // Public demo report
+        try {
+          const ticket = await request("/api/tickets/" + encodeURIComponent(judgeTicketId));
+          const scenario = $("judge-site-select") ? $("judge-site-select").value : "scenario_fiber";
+          reportMd = [
+            "# INFORME TÉCNICO DE INCIDENTE DEMOSTRATIVO — INNEROS VERIFIED OPERATIONS",
+            "",
+            `**ID del Ticket:** \`${ticket.id}\``,
+            `**Escenario Evaluado:** \`${scenario}\``,
+            `**Entorno:** Sandbox Demostrativo (Evaluación Técnica)`,
+            `**Severidad:** \`${ticket.priority || "P1"}\``,
+            `**Estado del Ticket:** \`${ticket.status}\``,
+            `**Fecha de Registro:** ${ticket.created_at || new Date().toISOString()}`,
+            `**Hash Criptográfico:** \`${ticket.last_evidence_hash || "SHA-256"}\``,
+            "",
+            "---",
+            "",
+            "## 1. DETALLE DEL ESCENARIO Y EVENTOS",
+            `- **Título:** ${ticket.title}`,
+            `- **Cliente:** ${ticket.customer}`,
+            `- **Eventos Registrados en Cadena Hash:** ${ticket.history ? ticket.history.length : 1}`,
+            "",
+            "## 2. HISTORIAL AUDITABLE DE ESTADOS",
+            ...(ticket.history || []).map(h => `- [${h.timestamp}] Acción: ${h.action || h.status} | Operador: ${h.actor || "demo"} | Hash: ${h.hash || "valid"}`),
+            "",
+            "## 3. INVARIANTE ZERO-FABRICATION (SANDBOX)",
+            "- El sistema rehúsa auto-resoluciones falsas ante anomalías no subsanadas.",
+            "- Todas las transiciones de estado quedan firmadas criptográficamente con SHA-256.",
+            "",
+            "---",
+            "*Generado en Entorno de Evaluación · InnerOS Verified Operations*"
+          ].join("\n");
+        } catch (e) {
+          toast("Error generando informe: " + e.message);
+          return;
+        }
+      } else {
+        toast("No hay incidente o ticket activo para exportar.");
+        return;
+      }
 
       const blob = new Blob([reportMd], {type: "text/markdown;charset=utf-8"});
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = `informe-tecnico-${t.ticket_id}.md`;
+      link.download = `informe-tecnico-${(liveTicketData && liveTicketData.ticket_id) || judgeTicketId || "demo"}.md`;
       link.click();
       URL.revokeObjectURL(link.href);
       toast("Informe técnico descargado exitosamente.");

@@ -60,14 +60,36 @@ def run_browser_qa(base: str, screenshots: Path | None) -> None:
             expect(page.locator("#judge-verify")).to_be_disabled()
             expect(page.locator("#judge-complete")).to_be_disabled()
             page.locator("#judge-start").click()
-            expect(page.locator("#judge-step-one")).to_contain_text("PASS", timeout=15000)
+            expect(page.locator("#judge-step-one")).to_contain_text("SIMULATED", timeout=15000)
             expect(page.locator("#judge-verify")).to_be_enabled()
             page.locator("#judge-verify").click()
-            expect(page.locator("#judge-step-two")).to_contain_text("PASS", timeout=15000)
+            expect(page.locator("#judge-step-two")).to_contain_text("SIMULATED", timeout=15000)
             expect(page.locator("#judge-proof")).to_contain_text("Verified SHA-256")
             page.locator("#judge-complete").click()
-            expect(page.locator("#judge-step-three")).to_contain_text("PASS", timeout=15000)
-            expect(page.locator("#ticket-board .ticket-state").first).to_have_text("resolved")
+            expect(page.locator("#judge-step-three")).to_contain_text("SIMULATED", timeout=15000)
+            # Ticket in board is in OPEN state (no artificial auto-resolve)
+            expect(page.locator("#ticket-board .ticket-state").first).to_have_text("open")
+            
+            # Step 4A: Notify On-Call (simulated channel)
+            expect(page.locator("#judge-notify")).to_be_enabled()
+            page.locator("#judge-notify").click()
+            expect(page.locator("#judge-step-notify-ack")).to_contain_text("SIMULATED", timeout=15000)
+
+            # Step 4B: Technical ACK
+            expect(page.locator("#judge-ack-btn")).to_be_enabled()
+            page.locator("#judge-ack-btn").click()
+            expect(page.locator("#judge-step-notify-ack")).to_contain_text("IN_PROGRESS", timeout=15000)
+            expect(page.locator("#ticket-board .ticket-state").first).to_have_text("in progress")
+
+            # Step 5: Recheck (Zero-Fabrication invariant: persistent failure confirmed)
+            expect(page.locator("#judge-recheck")).to_be_enabled()
+            page.locator("#judge-recheck").click()
+            expect(page.locator("#judge-step-four")).to_contain_text("SIMULATED", timeout=15000)
+            expect(page.locator("#judge-step-four")).to_contain_text("ANOMALÍA PERSISTENTE")
+            expect(page.locator("#ticket-board .ticket-state").first).to_have_text("in progress")
+
+            # Export Report button enabled and verified
+            expect(page.locator("#btn-export-report")).to_be_enabled()
             # Probe the new safety front. With no Docker worker in the public web
             # container this must be BLOCKED rather than a fabricated success.
             expect(page.locator("#containment")).to_be_visible()

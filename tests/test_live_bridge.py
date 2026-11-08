@@ -193,3 +193,56 @@ def test_xss_protection_in_telemetry_sanitization():
     # Ensure masked IP masked correctly
     assert "xxx" in res["targets_summary"][0]["masked_ip"]
 
+
+def test_live_status_sanitizes_sites_for_anonymous_public_users():
+    """Verify that /api/live/status conceals private sites and target counts from anonymous users."""
+    srv = web.create_server("127.0.0.1", 0)
+    port = srv.server_port
+
+    import threading, urllib.request
+    t = threading.Thread(target=srv.serve_forever, daemon=True)
+    t.start()
+
+    url = f"http://127.0.0.1:{port}/api/live/status"
+    with urllib.request.urlopen(url) as resp:
+        data = json.loads(resp.read().decode())
+        assert data["ok"] is True
+        assert data["authenticated"] is False
+        assert data["mode"] == "public_demo"
+        # Zero leakage of private infrastructure
+        assert "bellini" not in data["sites"]
+        assert "home_pcdoctor_lab" not in data["sites"]
+        assert "scenario_fiber" in data["sites"]
+        assert "scenario_iot" in data["sites"]
+        assert "targets" not in str(data["sites"])
+
+    srv.shutdown()
+    srv.server_close()
+
+
+def test_live_status_reveals_private_sites_for_authenticated_operator():
+    """Verify that /api/live/status reveals real sites to authenticated operators."""
+    test_token = "sec_test_operator_token_20261108"
+    bridge_client.INNEROS_OPS_TOKEN = test_token
+
+    srv = web.create_server("127.0.0.1", 0)
+    port = srv.server_port
+
+    import threading, urllib.request
+    t = threading.Thread(target=srv.serve_forever, daemon=True)
+    t.start()
+
+    url = f"http://127.0.0.1:{port}/api/live/status"
+    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {test_token}"})
+    with urllib.request.urlopen(req) as resp:
+        data = json.loads(resp.read().decode())
+        assert data["ok"] is True
+        assert data["authenticated"] is True
+        assert data["mode"] == "authenticated_live_ops"
+        assert "bellini" in data["sites"]
+        assert "home_pcdoctor_lab" in data["sites"]
+
+    srv.shutdown()
+    srv.server_close()
+
+
