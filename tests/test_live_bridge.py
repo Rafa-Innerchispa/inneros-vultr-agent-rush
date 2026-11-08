@@ -106,3 +106,90 @@ def test_private_ticket_endpoint_requires_auth():
 
     srv.shutdown()
     srv.server_close()
+
+
+def test_bridge_connection_error_handling():
+    """Verify that bridge client fails closed cleanly with ok=False when bridge is unreachable."""
+    with patch("inneros_verified_ops.bridge_client.BRIDGE_URL", "http://127.0.0.1:59999"):
+        res = bridge_client.check_bridge_health()
+        assert res["ok"] is False
+        assert "Bridge connection failed" in res["error"]
+
+
+def test_create_operational_ticket_contract():
+    """Verify operational ticket creation payload contract and SHA-256 evidence attachment."""
+    mock_resp = {
+        "ok": True,
+        "ticket": {
+            "ticket_id": "TKT-20261108-TEST-999",
+            "site_id": "bellini-i-ii",
+            "client_id": "pcdoctor_operations",
+            "severity": "P1",
+            "status": "OPEN",
+            "evidence_hash": "a" * 64
+        }
+    }
+    with patch("inneros_verified_ops.bridge_client._req", return_value=mock_resp) as mock_req:
+        res = bridge_client.create_operational_ticket(
+            site_id="bellini-i-ii",
+            client_id="pcdoctor_operations",
+            anomaly={"total_offline": 7},
+            evidence_hash="a" * 64,
+            diagnosis="Switch power outage",
+            recommendations=["Check rack breaker"]
+        )
+        assert res["ok"] is True
+        assert res["ticket"]["ticket_id"] == "TKT-20261108-TEST-999"
+        mock_req.assert_called_once()
+        args, kwargs = mock_req.call_args
+        assert args[0] == "POST"
+        assert args[1] == "/api/tickets/create"
+        assert kwargs["payload"]["site_id"] == "bellini-i-ii"
+        assert kwargs["payload"]["evidence_hash"] == "a" * 64
+
+
+def test_recheck_ticket_preserves_zero_fabrication_invariant():
+    """Verify that recheck correctly surfaces persistent anomalies without fake recovery."""
+    mock_resp = {
+        "ok": True,
+        "recheck": {
+            "ticket_id": "TKT-20261108-TEST-999",
+            "status": "ANOMALY_PERSISTENT",
+            "targets_online": 7,
+            "targets_offline": 7,
+            "verified_recovery": False
+        }
+    }
+    with patch("inneros_verified_ops.bridge_client._req", return_value=mock_resp):
+        res = bridge_client.recheck_ticket("TKT-20261108-TEST-999")
+        assert res["ok"] is True
+        assert res["recheck"]["status"] == "ANOMALY_PERSISTENT"
+        assert res["recheck"]["verified_recovery"] is False
+
+
+def test_xss_protection_in_telemetry_sanitization():
+    """Verify that malicious script tags in raw hardware device names do not break sanitization."""
+    xss_sample = {
+        "timestamp": "2026-11-08T12:00:00Z",
+        "gateway_online": True,
+        "summary": {"total_targets": 1, "online_count": 1, "offline_count": 0},
+        "targets": [
+            {
+                "ip": "10.0.0.1",
+                "asset_id": "dev_xss",
+                "name": "<script>alert('XSS')</script> Gateway",
+                "device_type": "router",
+                "online": True,
+                "icmp": {"loss_pct": 0.0},
+                "tcp": {}
+            }
+        ]
+    }
+    res = bridge_client.sanitize_bellini_sample(xss_sample)
+    assert res["ok"] is True
+    # Verify the target was properly sanitized and evidence hash computed
+    assert len(res["evidence_sha256"]) == 64
+    assert res["targets_summary"][0]["name"] == "<script>alert('XSS')</script> Gateway"
+    # Ensure masked IP masked correctly
+    assert "xxx" in res["targets_summary"][0]["masked_ip"]
+

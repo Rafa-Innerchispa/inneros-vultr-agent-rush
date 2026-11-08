@@ -19,7 +19,7 @@ import urllib.request
 import urllib.error
 import ssl
 
-BASE_URL = os.environ.get("INNEROS_APP_URL", "https://45.77.164.161.sslip.io")
+BASE_URL = os.environ.get("INNEROS_APP_URL", "https://vultr.innerchispa.us")
 REVOKED_TOKENS = [
     "inneros-ops-token-bellini-2026",
     "sec_ops_vultr_58085a2638f64246547b956c617e6492",

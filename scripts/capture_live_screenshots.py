@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-URL = os.environ.get("INNEROS_APP_URL", "https://45.77.164.161.sslip.io/judge")
+URL = os.environ.get("INNEROS_APP_URL", "https://vultr.innerchispa.us/judge")
 TOKEN = os.environ.get("INNEROS_OPS_TOKEN", "")
 OUT_DIR = Path(os.environ.get("SCREENSHOTS_DIR", "/tmp/vultr-screenshots"))
 OUT_DIR.mkdir(parents=True, exist_ok=True)

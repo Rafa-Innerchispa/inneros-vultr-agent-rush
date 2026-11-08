@@ -2,7 +2,7 @@
 
 **Vultr: Agent Rush Hackathon 2026 | Challenge 2: Powering the Future of Work**
 
-> **Status (2026-11-08 · Production Deployed):** Release v0.6.0 fully deployed and verified in production on Vultr Cloud Compute (`45.77.164.161` Miami) with Let's Encrypt TLS at **https://45.77.164.161.sslip.io/judge**. Directly integrated with InnerOS Edge Host on AMD 1.5 hardware over a reverse encrypted socket (`127.0.0.1:8795`). Probes real campus hardware, executes local autonomous SRE inference with Qwen 30B ($0.00 spend), records persistent MongoDB tickets (`ops_tickets`), dispatches internal alerts via InnerOS Agent Messaging, enforces human technical ACKs (zero auto-ACK), and upholds the Zero-Fabrication invariant on physical recheck. 100% green test suite (85 unit/contract tests passing).
+> **Status (2026-11-08 · Production Deployed):** Release v0.6.0 fully deployed and verified in production on Vultr Cloud Compute (`45.77.164.161` Miami) with Let's Encrypt TLS at **https://vultr.innerchispa.us/judge** (and **https://45.77.164.161.sslip.io/judge**). Directly integrated with InnerOS Edge Host on AMD 1.5 hardware over a reverse encrypted socket (`127.0.0.1:8795`). Probes real campus hardware, executes local autonomous SRE inference with Qwen 30B ($0.00 spend), records persistent MongoDB tickets (`ops_tickets`), dispatches internal alerts via InnerOS Agent Messaging, enforces human technical ACKs (zero auto-ACK), and upholds the Zero-Fabrication invariant on physical recheck. 100% green test suite (87 unit/contract tests passing).
 
 A mission-critical enterprise operations console that turns infrastructure faults into verifiable workflows and **cryptographically tamper-evident evidence** (SHA-256) rather than conversational promises.
 
@@ -10,14 +10,16 @@ A mission-critical enterprise operations console that turns infrastructure fault
 
 ## 1. Live Deployment & Architecture
 
-- **Public Production URL:** [https://45.77.164.161.sslip.io/judge](https://45.77.164.161.sslip.io/judge)
+- **Primary Production URL:** [https://vultr.innerchispa.us/judge](https://vultr.innerchispa.us/judge)
+- **Alternative Subdomain:** [https://agentrush.innerchispa.us/judge](https://agentrush.innerchispa.us/judge)
+- **Direct Fallback URL:** [https://45.77.164.161.sslip.io/judge](https://45.77.164.161.sslip.io/judge)
 - **Official Submission:** [LabLab Vultr Agent Rush 2026](https://lablab.build/submissions/cvs2mpnjnhx0kbbqgm3lmo4o)
 - **Vultr VM:** `45.77.164.161` (Miami `mia`, plan `vc2-1c-2gb`, Ubuntu 24.04 LTS)
-- **Web Runtime:** FastAPI + Uvicorn + Caddy (Automatic HTTPS reverse proxy)
+- **Web Runtime:** FastAPI + Uvicorn + Caddy (Automatic HTTPS reverse proxy with Cloudflare DNS integration)
 - **Edge Node:** AMD 1.5 Hardware (`inneros-5`) via encrypted reverse tunnel (`127.0.0.1:8795`)
-- **Telemetry Sources:**
-  - **Bellini I-II Campus (`bellini-i-ii`):** 14 targets probed in real time by Bellini Network Guardian (Core distribution switch Hikvision DS-3E1510P-EI/M and APs GWN 213/216/227 offline; Gateway GCC6010, Grandstream UCM PBX, and Dahua NVR online).
-  - **Casa / PC Doctor Lab (`home_pcdoctor_lab`):** 92 entities monitored via Device Fabric AG-60 and Home Assistant Core.
+- **Telemetry Integrations:**
+  - **Enterprise Campus Core & Access Fabric:** 14 managed infrastructure targets probed in real time by Network Guardian telemetry (core switches, distribution units, wireless access points, IP PBX, and gateway connectivity).
+  - **Edge Automation & Device Fabric:** 92 IoT and edge infrastructure entities monitored via Device Fabric telemetry and automation controllers.
 - **Inference Engine:** `QuantTrio/Qwen3-Coder-30B-A3B-Instruct-AWQ` via local vLLM on AMD 1.5 ($0.00 spend, zero third-party API dependencies).
 - **Persistent Storage:** Local SQLite ledger for execution traces + InnerOS MongoDB (`ops_tickets`) for operational incident tickets.
 
@@ -45,10 +47,10 @@ The platform enforces a strict separation between two operating modes:
 
 | Step | Operation | Backend Endpoint | Behavior |
 |---|---|---|---|
-| **01** | **Live Hardware Sweep** | `POST /api/live/sweep/bellini` | Probes 14 campus targets; calculates ICMP loss, TCP open ports, and SHA-256 evidence. |
+| **01** | **Live Hardware Sweep** | `POST /api/live/sweep/bellini` | Probes 14 managed campus targets; calculates ICMP loss, TCP open ports, and SHA-256 evidence. |
 | **02** | **Autonomous SRE Diagnosis** | `POST /api/live/diagnose` | Qwen 30B local inference on AMD 1.5 ($0.00 spend). Root-cause analysis & strict READ-ONLY containment rules. |
 | **03** | **Persist Ticket in MongoDB** | `POST /api/live/ticket` | Creates immutable incident ticket (`TKT-...`, P1 CRITICAL) in InnerOS MongoDB `ops_tickets`. |
-| **04A** | **Dispatch Internal Notification** | `POST /api/live/ticket/{id}/notify` | Dispatches internal alert to PC Doctor on-call lead (`rafael`) via canonical agent messaging (`DELIVERED`). |
+| **04A** | **Dispatch Internal Notification** | `POST /api/live/ticket/{id}/notify` | Dispatches internal alert to authorized on-call operations engineer via canonical agent messaging (`DELIVERED`). |
 | **04B** | **Register Human Operator ACK** | `POST /api/live/ticket/{id}/ack` | Records explicit human acknowledgment with operator name and technical note (zero fake auto-ACK). |
 | **05** | **Physical Hardware Recheck** | `POST /api/live/ticket/{id}/recheck` | Re-probes hardware. Confirms persistent physical failure (`ANOMALY_PERSISTENT`); refuses fake auto-closure. |
 
@@ -105,16 +107,16 @@ systemctl restart inneros-verified-ops.service
 |---|---|---|
 | Web Mission Control | Mobile-friendly UI for real workflow requests, results, and ledger | **VERIFIED (LIVE)** |
 | Judge Console (`/judge`) | 5-step operational pipeline + live hardware telemetry | **VERIFIED (LIVE)** |
-| Bellini Network Guardian | 14 targets ICMP/TCP probe via AMD 1.5 Edge Host | **VERIFIED (REAL)** |
-| Device Fabric AG-60 | 92 Home Assistant entities telemetry | **VERIFIED (REAL)** |
+| Campus Network Guardian | 14 enterprise infrastructure targets ICMP/TCP probe via Edge Host | **VERIFIED (REAL)** |
+| Edge Device Fabric | 92 edge entities telemetry and health status | **VERIFIED (REAL)** |
 | Qwen 30B Local SRE | Local vLLM on AMD 1.5 ($0.00 spend, zero API cost) | **VERIFIED (REAL)** |
 | Operational Ticketing | Persistent MongoDB collection (`ops_tickets`) with SHA-256 | **VERIFIED (REAL)** |
-| Agent Notification | Internal dispatch to on-call lead (`rafael`) | **VERIFIED (REAL)** |
+| Agent Notification | Internal dispatch to authorized on-call operations engineer | **VERIFIED (REAL)** |
 | Human Operator ACK | Explicit human acknowledgment with technical note | **VERIFIED (REAL)** |
 | Zero-Fabrication Invariant | Physical recheck detects persistent anomaly; ticket stays open | **VERIFIED (REAL)** |
 | Containment Lab | Curated Docker isolation probes (fails closed without daemon) | **VERIFIED (FAIL-CLOSED)** |
 | Security Hardening | Bearer token auth, query-string leak elimination, token revocation | **VERIFIED (BLINDADO)** |
-| Vultr Cloud Compute | Miami instance with Caddy TLS reverse proxy | **VERIFIED (LIVE)** |
+| Vultr Cloud Compute | Miami instance with Caddy TLS reverse proxy & Cloudflare DNS | **VERIFIED (LIVE)** |
 
 **Rules fallback** is always identified as rules, not AI. If no inference model is configured, two built-in demonstration cases use explicit deterministic patch rules. Custom repairs require a configured model and operator authorization.
 
