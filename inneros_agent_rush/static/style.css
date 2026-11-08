@@ -138,4 +138,13 @@
 .modal-error{color:#f87171;font-size:11px;min-height:16px;margin-top:6px}
 
 @media(max-width:1200px){.judge-steps{grid-template-columns:repeat(3,minmax(0,1fr))}.ops-dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:760px){.judge-steps{grid-template-columns:1fr}.ops-dashboard-grid{grid-template-columns:1fr}.judge-head-right{align-items:flex-start}}
+@media(max-width:760px){
+  html, body, .shell, main, .content, .judge-workthrough, .sidebar { max-width: 100vw; overflow-x: hidden; }
+  .judge-steps{grid-template-columns:1fr}
+  .ops-dashboard-grid{grid-template-columns:1fr}
+  .judge-head-right{align-items:flex-start; width:100%; max-width:100%; min-width:0}
+  .judge-site-wrapper{width:100%; max-width:100%; min-width:0; flex-wrap:wrap}
+  .judge-site-select{width:100%; max-width:100%; min-width:0; text-overflow:ellipsis}
+  .sidebar nav{max-width:100%; overflow-x:auto}
+  .modal-box{max-width:92vw}
+}
