@@ -38,7 +38,7 @@ def req(method, path, body=None, token=None):
         headers["Authorization"] = f"Bearer {token}"
     r = urllib.request.Request(url, data=data, headers=headers, method=method)
     try:
-        with urllib.request.urlopen(r, context=ctx, timeout=40) as resp:
+        with urllib.request.urlopen(r, context=ctx, timeout=65) as resp:
             raw = resp.read().decode()
             return resp.status, json.loads(raw) if "json" in resp.headers.get("Content-Type", "") else raw
     except urllib.error.HTTPError as exc:

@@ -313,7 +313,7 @@ def create_app(engine: WorkflowEngine | None = None, *, auth_token: str | None =
     @app.post("/api/live/sweep/bellini")
     def live_sweep_bellini(authorization: str = Header(default="")):
         require_operator(authorization)
-        res = _bridge_call("POST", "/api/sweep/bellini", timeout=35.0)
+        res = _bridge_call("POST", "/api/sweep/bellini", timeout=60.0)
         if not res.get("sanitized"):
             raise HTTPException(status_code=502, detail=res.get("error", "Bellini sweep failed"))
         return res["sanitized"]
@@ -321,7 +321,7 @@ def create_app(engine: WorkflowEngine | None = None, *, auth_token: str | None =
     @app.post("/api/live/sweep/home")
     def live_sweep_home(authorization: str = Header(default="")):
         require_operator(authorization)
-        res = _bridge_call("POST", "/api/sweep/home", timeout=20.0)
+        res = _bridge_call("POST", "/api/sweep/home", timeout=30.0)
         if not res.get("sanitized"):
             raise HTTPException(status_code=502, detail=res.get("error", "Home Lab sweep failed"))
         return res["sanitized"]
@@ -330,13 +330,13 @@ def create_app(engine: WorkflowEngine | None = None, *, auth_token: str | None =
     def live_diagnose(payload: dict, authorization: str = Header(default="")):
         require_operator(authorization)
         prompt = payload.get("prompt", "Analyze network telemetry.")
-        res = _bridge_call("POST", "/api/diagnose", payload={"prompt": prompt}, timeout=30.0)
+        res = _bridge_call("POST", "/api/diagnose", payload={"prompt": prompt}, timeout=45.0)
         return res
 
     @app.post("/api/live/ticket")
     def live_create_ticket(payload: dict, authorization: str = Header(default="")):
         require_operator(authorization)
-        res = _bridge_call("POST", "/api/tickets/create", payload=payload, timeout=10.0)
+        res = _bridge_call("POST", "/api/tickets/create", payload=payload, timeout=15.0)
         if not res.get("ok"):
             raise HTTPException(status_code=502, detail=res.get("error", "Failed to create ticket in MongoDB"))
         return res
@@ -344,7 +344,7 @@ def create_app(engine: WorkflowEngine | None = None, *, auth_token: str | None =
     @app.post("/api/live/ticket/{ticket_id}/notify")
     def live_notify_oncall(ticket_id: str, authorization: str = Header(default="")):
         require_operator(authorization)
-        res = _bridge_call("POST", f"/api/tickets/{ticket_id}/notify", timeout=10.0)
+        res = _bridge_call("POST", f"/api/tickets/{ticket_id}/notify", timeout=15.0)
         if not res.get("ok"):
             raise HTTPException(status_code=502, detail=res.get("error", "Notification failed"))
         return res
@@ -352,7 +352,7 @@ def create_app(engine: WorkflowEngine | None = None, *, auth_token: str | None =
     @app.post("/api/live/ticket/{ticket_id}/ack")
     def live_ack_ticket(ticket_id: str, payload: dict | None = None, authorization: str = Header(default="")):
         require_operator(authorization)
-        res = _bridge_call("POST", f"/api/tickets/{ticket_id}/ack", payload=payload or {}, timeout=10.0)
+        res = _bridge_call("POST", f"/api/tickets/{ticket_id}/ack", payload=payload or {}, timeout=15.0)
         if not res.get("ok"):
             raise HTTPException(status_code=502, detail=res.get("error", "ACK failed"))
         return res
@@ -360,7 +360,7 @@ def create_app(engine: WorkflowEngine | None = None, *, auth_token: str | None =
     @app.post("/api/live/ticket/{ticket_id}/recheck")
     def live_recheck_ticket(ticket_id: str, payload: dict | None = None, authorization: str = Header(default="")):
         require_operator(authorization)
-        res = _bridge_call("POST", f"/api/tickets/{ticket_id}/recheck", payload=payload or {}, timeout=35.0)
+        res = _bridge_call("POST", f"/api/tickets/{ticket_id}/recheck", payload=payload or {}, timeout=60.0)
         if not res.get("ok"):
             raise HTTPException(status_code=502, detail=res.get("error", "Recheck sweep failed"))
         return res
