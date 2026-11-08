@@ -62,6 +62,9 @@ class VerifiedOpsHandler(BaseHTTPRequestHandler):
         except Exception:
             return {}
 
+    def do_HEAD(self) -> None:
+        self.do_GET()
+
     def do_GET(self) -> None:
         parts = urlsplit(self.path)
         path = parts.path
