@@ -36,12 +36,12 @@ with sync_playwright() as p:
     # 3. Desktop - Execute Full 5-Step Real Hardware Walkthrough
     print("Executing Step 1: Live Sweep...")
     page.locator("#judge-start").click()
-    page.wait_for_selector("#judge-step-one.pass", timeout=30000)
+    page.wait_for_selector("#judge-step-one.pass", timeout=60000)
     page.wait_for_timeout(1000)
 
     print("Executing Step 2: Qwen 30B Diagnosis...")
     page.locator("#judge-verify").click()
-    page.wait_for_selector("#judge-step-two.pass", timeout=40000)
+    page.wait_for_selector("#judge-step-two.pass", timeout=60000)
     page.wait_for_timeout(1000)
 
     print("Executing Step 3: Create Ticket in MongoDB...")
