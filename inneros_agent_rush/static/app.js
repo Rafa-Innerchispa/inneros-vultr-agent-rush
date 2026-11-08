@@ -279,6 +279,7 @@ function updateAuthUI(authenticated) {
   if ($("step-three-title")) $("step-three-title").textContent = authenticated ? "Crear Ticket en MongoDB" : "Crear Ticket con Evidencia SHA-256";
   if ($("step-four-title")) $("step-four-title").textContent = authenticated ? "Notificar y Registrar ACK" : "Despachar Alerta y Acuse Técnico";
   if ($("step-five-title")) $("step-five-title").textContent = authenticated ? "Recheck de Hardware Físico" : "Recomprobación Física de Estado";
+  if ($("btn-view-topology")) $("btn-view-topology").disabled = !authenticated;
 
   const judgeMode = $("judge-mode");
   if (judgeMode) {
@@ -755,13 +756,15 @@ if (judgeView) {
   const btnViewTopo = $("btn-view-topology");
   if (btnViewTopo && topologyModal) {
     btnViewTopo.addEventListener("click", async () => {
-      if (!liveTicketData) return;
       topologyModal.classList.add("visible");
       topologyModal.style.display = "flex";
       $("topology-modal-content").textContent = "Consultando registro privado en InnerOS MongoDB mediante encabezado Authorization: Bearer <token>...";
 
       try {
-        const tkt = await request("/api/private/ops/ticket/" + encodeURIComponent(liveTicketData.ticket_id));
+        const path = liveTicketData
+          ? "/api/private/ops/ticket/" + encodeURIComponent(liveTicketData.ticket_id)
+          : "/api/live/status";
+        const tkt = await request(path);
         $("topology-modal-content").textContent = JSON.stringify(tkt, null, 2);
       } catch (err) {
         $("topology-modal-content").textContent = "Error al consultar topología privada: " + err.message +
